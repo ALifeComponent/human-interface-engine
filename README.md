@@ -9,14 +9,17 @@ The Human Interface Engine serves as a core component group in the **ALifeCompon
 The engine is composed of specialized modules, each designed to address specific interaction requirements:
 
 ### Viewer Engine
+
 A high-level interface for rendering 3D graphics and handling user input events. Key capabilities include:
+
 - Interactive 3D application development tools
 - Camera control systems
 - Object manipulation interfaces
 - Event handling framework
 
 ### Control-panel Engine
+
 A dedicated interface for parameter configuration and management, featuring:
+
 - Dynamic parameter adjustment
 - Persistent state management
-- User-friendly control layout tools
