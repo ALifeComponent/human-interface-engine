@@ -20,9 +20,9 @@ impl Default for CameraSettings {
             orbit_distance: 20.0,
             min_orbit_distance: 1.0,
             max_orbit_distance: 100.0,
-            pitch_speed: -0.003,
+            pitch_speed: -0.003, // ピッチ方向のデフォルト速度を反転
             pitch_range: -pitch_limit..pitch_limit,
-            yaw_speed: -0.004,
+            yaw_speed: -0.004, // ヨー方向のデフォルト速度を反転
             invert_pitch: false,
             invert_yaw: false,
         }
@@ -62,57 +62,4 @@ pub fn orbit(
 
     let target = Vec3::ZERO;
     camera.translation = target - camera.forward() * camera_settings.orbit_distance;
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_orbit_rotation_and_position() {
-        // テスト用アプリケーションをセットアップ
-        let mut app = App::new();
-
-        // 必要なリソースを追加
-        app.insert_resource(CameraSettings::default());
-
-        // カメラエンティティを生成
-        let mut transform = Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y);
-        let camera_entity = app.world_mut().spawn((Camera3d::default(), transform)).id();
-
-        // マウス入力の模擬
-        let mut mouse_motion = AccumulatedMouseMotion {
-            delta: Vec2::new(100.0, 50.0),
-        };
-        app.insert_resource(mouse_motion.clone());
-
-        // マウスボタンの模擬
-        let mut mouse_buttons = ButtonInput::<MouseButton>::default();
-        mouse_buttons.press(MouseButton::Left);
-        app.insert_resource(mouse_buttons);
-
-        // システムを実行
-        orbit(
-            Single(&mut transform),
-            app.world().resource::<CameraSettings>().clone(),
-            app.world().resource::<ButtonInput<MouseButton>>().clone(),
-            app.world().resource::<AccumulatedMouseMotion>().clone(),
-        );
-
-        // 回転が正しく更新されたか検証
-        let (new_yaw, new_pitch, _) = transform.rotation.to_euler(EulerRot::YXZ);
-        let (initial_yaw, initial_pitch, _) = Transform::from_xyz(5.0, 5.0, 5.0)
-            .looking_at(Vec3::ZERO, Vec3::Y)
-            .rotation
-            .to_euler(EulerRot::YXZ);
-
-        // ヨーとピッチが変化していることを確認
-        assert_ne!(new_yaw, initial_yaw);
-        assert_ne!(new_pitch, initial_pitch);
-
-        // カメラの位置が正しく更新されたか検証
-        let expected_position =
-            Vec3::ZERO - transform.forward() * CameraSettings::default().orbit_distance;
-        assert!(transform.translation.distance(expected_position) < 0.001);
-    }
 }

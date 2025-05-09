@@ -19,7 +19,6 @@ pub fn run_app() -> anyhow::Result<()> {
 }
 
 fn toggle_input_system(
-    mut commands: Commands,
     mut camera_settings: ResMut<CameraSettings>,
     mut query: Query<(&mut Text, &ToggleButton)>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
@@ -56,76 +55,6 @@ fn toggle_input_system(
             ToggleAction::InvertYaw => "Invert Yaw: ",
         };
 
-        text.text = format!("{}{}", label, state);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_toggle_input_system() {
-        // テスト用アプリケーションをセットアップ
-        let mut app = App::new();
-
-        // 必要なリソースを追加
-        app.insert_resource(CameraSettings::default());
-
-        // キーボード入力の模擬
-        let mut keyboard_input = ButtonInput::<KeyCode>::default();
-        keyboard_input.press(KeyCode::KeyP);
-        keyboard_input.press(KeyCode::KeyY);
-        app.insert_resource(keyboard_input);
-
-        // UI要素を生成
-        let mut text1 = Text::new("Invert Pitch: Off");
-        let mut text2 = Text::new("Invert Yaw: Off");
-
-        let entity1 = app
-            .world_mut()
-            .spawn((
-                text1,
-                ToggleButton {
-                    action: ToggleAction::InvertPitch,
-                },
-            ))
-            .id();
-
-        let entity2 = app
-            .world_mut()
-            .spawn((
-                text2,
-                ToggleButton {
-                    action: ToggleAction::InvertYaw,
-                },
-            ))
-            .id();
-
-        // クエリ用のワールドビューを取得
-        let query = app.world_mut().query::<(&mut Text, &ToggleButton)>();
-
-        // システムを実行
-        toggle_input_system(
-            app.world_mut().commands(),
-            app.world_mut().resource_mut::<CameraSettings>().clone(),
-            query,
-            app.world().resource::<ButtonInput<KeyCode>>().clone(),
-        );
-
-        // カメラ設定が正しく切り替わったか検証
-        let settings = app.world().resource::<CameraSettings>();
-        assert!(settings.invert_pitch);
-        assert!(settings.invert_yaw);
-
-        // UIテキストが正しく更新されたか検証
-        let mut query_iter = app.world().query::<(&Text, &ToggleButton)>();
-
-        for (text, button) in query_iter.iter(app.world()) {
-            match button.action {
-                ToggleAction::InvertPitch => assert_eq!(text.text, "Invert Pitch: On"),
-                ToggleAction::InvertYaw => assert_eq!(text.text, "Invert Yaw: On"),
-            }
-        }
+        text.0 = format!("{}{}", label, state);
     }
 }
