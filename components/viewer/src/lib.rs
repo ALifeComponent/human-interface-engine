@@ -1,6 +1,9 @@
 use std::{f32::consts::FRAC_PI_2, ops::Range};
 
-use bevy::{input::mouse::{AccumulatedMouseMotion, MouseWheel}, prelude::*};
+use bevy::{
+    input::mouse::{AccumulatedMouseMotion, MouseWheel},
+    prelude::*,
+};
 
 pub fn run_app() -> anyhow::Result<()> {
     App::new()
@@ -113,8 +116,10 @@ fn orbit(
     if scroll != 0.0 {
         let zoom_speed = 1.0;
         let delta_distance = -scroll * zoom_speed;
-        camera_settings.orbit_distance = (camera_settings.orbit_distance + delta_distance)
-            .clamp(camera_settings.min_orbit_distance, camera_settings.max_orbit_distance);
+        camera_settings.orbit_distance = (camera_settings.orbit_distance + delta_distance).clamp(
+            camera_settings.min_orbit_distance,
+            camera_settings.max_orbit_distance,
+        );
     }
 
     // Handle rotation with left mouse button drag
@@ -126,8 +131,10 @@ fn orbit(
         let (yaw, pitch, _) = camera.rotation.to_euler(EulerRot::YXZ);
 
         // Calculate new pitch and yaw, applying limits
-        let new_pitch = (pitch + delta_pitch)
-            .clamp(camera_settings.pitch_range.start, camera_settings.pitch_range.end);
+        let new_pitch = (pitch + delta_pitch).clamp(
+            camera_settings.pitch_range.start,
+            camera_settings.pitch_range.end,
+        );
         let new_yaw = yaw + delta_yaw;
 
         // Update camera rotation
