@@ -19,7 +19,6 @@ pub fn run_app() -> anyhow::Result<()> {
 }
 
 fn toggle_input_system(
-    mut commands: Commands,
     mut camera_settings: ResMut<CameraSettings>,
     mut query: Query<(&mut Text, &ToggleButton)>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
@@ -56,7 +55,7 @@ fn toggle_input_system(
             ToggleAction::InvertYaw => "Invert Yaw: ",
         };
 
-        text.text = format!("{}{}", label, state);
+        text.0 = format!("{}{}", label, state);
     }
 }
 
@@ -79,13 +78,10 @@ mod tests {
         app.insert_resource(keyboard_input);
 
         // UI要素を生成
-        let mut text1 = Text::new("Invert Pitch: Off");
-        let mut text2 = Text::new("Invert Yaw: Off");
-
         let entity1 = app
             .world_mut()
             .spawn((
-                text1,
+                Text::new("Invert Pitch: Off"),
                 ToggleButton {
                     action: ToggleAction::InvertPitch,
                 },
@@ -95,21 +91,17 @@ mod tests {
         let entity2 = app
             .world_mut()
             .spawn((
-                text2,
+                Text::new("Invert Yaw: Off"),
                 ToggleButton {
                     action: ToggleAction::InvertYaw,
                 },
             ))
             .id();
 
-        // クエリ用のワールドビューを取得
-        let query = app.world_mut().query::<(&mut Text, &ToggleButton)>();
-
         // システムを実行
         toggle_input_system(
-            app.world_mut().commands(),
             app.world_mut().resource_mut::<CameraSettings>().clone(),
-            query,
+            app.world_mut().query::<(&mut Text, &ToggleButton)>(),
             app.world().resource::<ButtonInput<KeyCode>>().clone(),
         );
 
@@ -119,12 +111,11 @@ mod tests {
         assert!(settings.invert_yaw);
 
         // UIテキストが正しく更新されたか検証
-        let mut query_iter = app.world().query::<(&Text, &ToggleButton)>();
-
-        for (text, button) in query_iter.iter(app.world()) {
+        let query = app.world().query::<(&Text, &ToggleButton)>();
+        for (text, button) in query.iter(app.world()) {
             match button.action {
-                ToggleAction::InvertPitch => assert_eq!(text.text, "Invert Pitch: On"),
-                ToggleAction::InvertYaw => assert_eq!(text.text, "Invert Yaw: On"),
+                ToggleAction::InvertPitch => assert_eq!(text.0, "Invert Pitch: On"),
+                ToggleAction::InvertYaw => assert_eq!(text.0, "Invert Yaw: On"),
             }
         }
     }

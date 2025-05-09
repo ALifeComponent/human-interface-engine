@@ -36,21 +36,17 @@ mod tests {
         app.insert_resource(settings);
 
         // マウスホイールイベントを追加
-        let mut scroll_events = EventReader::<MouseWheel>::default();
-        let mut events = Events::<MouseWheel>::default();
+        let mut events = app.world_mut().resource_mut::<Events<MouseWheel>>();
         events.send(MouseWheel {
-            unit: MouseScrollUnit::Line,
-            x: 0.0,
+            unit: MouseScrollDelta::Line,
             y: 1.0,
+            ..default()
         });
-        app.insert_events::<MouseWheel>();
 
         // システムを実行
         handle_zoom(
             app.world_mut().resource_mut::<CameraSettings>().clone(),
-            app.world_mut()
-                .resource_mut::<Events<MouseWheel>>()
-                .get_reader(&mut scroll_events),
+            app.world_mut().resource_mut::<Events<MouseWheel>>().read(),
         );
 
         // ズームが正しく更新されたか検証
@@ -69,21 +65,17 @@ mod tests {
         app.insert_resource(settings);
 
         // マウスホイールイベントを追加
-        let mut scroll_events = EventReader::<MouseWheel>::default();
-        let mut events = Events::<MouseWheel>::default();
+        let mut events = app.world_mut().resource_mut::<Events<MouseWheel>>();
         events.send(MouseWheel {
-            unit: MouseScrollUnit::Line,
-            x: 0.0,
+            unit: MouseScrollDelta::Line,
             y: -1.0,
+            ..default()
         });
-        app.insert_events::<MouseWheel>();
 
         // システムを実行
         handle_zoom(
             app.world_mut().resource_mut::<CameraSettings>().clone(),
-            app.world_mut()
-                .resource_mut::<Events<MouseWheel>>()
-                .get_reader(&mut scroll_events),
+            app.world_mut().resource_mut::<Events<MouseWheel>>().read(),
         );
 
         // ズームが正しく更新されたか検証
@@ -102,21 +94,17 @@ mod tests {
         app.insert_resource(settings);
 
         // マウスホイールイベント（縮小しようとする）
-        let mut scroll_events = EventReader::<MouseWheel>::default();
-        let mut events = Events::<MouseWheel>::default();
+        let mut events = app.world_mut().resource_mut::<Events<MouseWheel>>();
         events.send(MouseWheel {
-            unit: MouseScrollUnit::Line,
-            x: 0.0,
+            unit: MouseScrollDelta::Line,
             y: 1.0,
+            ..default()
         });
-        app.insert_events::<MouseWheel>();
 
         // システムを実行
         handle_zoom(
             app.world_mut().resource_mut::<CameraSettings>().clone(),
-            app.world_mut()
-                .resource_mut::<Events<MouseWheel>>()
-                .get_reader(&mut scroll_events),
+            app.world_mut().resource_mut::<Events<MouseWheel>>().read(),
         );
 
         // 最小値でクランプされていることを確認
@@ -133,17 +121,15 @@ mod tests {
 
         // マウスホイールイベント（拡大しようとする）
         events.send(MouseWheel {
-            unit: MouseScrollUnit::Line,
-            x: 0.0,
+            unit: MouseScrollDelta::Line,
             y: -1.0,
+            ..default()
         });
 
         // システムを実行
         handle_zoom(
             app.world_mut().resource_mut::<CameraSettings>().clone(),
-            app.world_mut()
-                .resource_mut::<Events<MouseWheel>>()
-                .get_reader(&mut scroll_events),
+            app.world_mut().resource_mut::<Events<MouseWheel>>().read(),
         );
 
         // 最大値でクランプされていることを確認
