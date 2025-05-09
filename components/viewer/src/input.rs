@@ -20,3 +20,137 @@ pub fn handle_zoom(
         );
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_handle_zoom_with_positive_scroll() {
+        // テスト用アプリケーションをセットアップ
+        let mut app = App::new();
+
+        // 必要なリソースを追加
+        let mut settings = CameraSettings::default();
+        settings.orbit_distance = 20.0;
+        app.insert_resource(settings);
+
+        // マウスホイールイベントを追加
+        let mut scroll_events = EventReader::<MouseWheel>::default();
+        let mut events = Events::<MouseWheel>::default();
+        events.send(MouseWheel {
+            unit: MouseScrollUnit::Line,
+            x: 0.0,
+            y: 1.0,
+        });
+        app.insert_events::<MouseWheel>();
+
+        // システムを実行
+        handle_zoom(
+            app.world_mut().resource_mut::<CameraSettings>().clone(),
+            app.world_mut()
+                .resource_mut::<Events<MouseWheel>>()
+                .get_reader(&mut scroll_events),
+        );
+
+        // ズームが正しく更新されたか検証
+        let updated_settings = app.world().resource::<CameraSettings>();
+        assert!(updated_settings.orbit_distance < 20.0);
+    }
+
+    #[test]
+    fn test_handle_zoom_with_negative_scroll() {
+        // テスト用アプリケーションをセットアップ
+        let mut app = App::new();
+
+        // 必要なリソースを追加
+        let mut settings = CameraSettings::default();
+        settings.orbit_distance = 20.0;
+        app.insert_resource(settings);
+
+        // マウスホイールイベントを追加
+        let mut scroll_events = EventReader::<MouseWheel>::default();
+        let mut events = Events::<MouseWheel>::default();
+        events.send(MouseWheel {
+            unit: MouseScrollUnit::Line,
+            x: 0.0,
+            y: -1.0,
+        });
+        app.insert_events::<MouseWheel>();
+
+        // システムを実行
+        handle_zoom(
+            app.world_mut().resource_mut::<CameraSettings>().clone(),
+            app.world_mut()
+                .resource_mut::<Events<MouseWheel>>()
+                .get_reader(&mut scroll_events),
+        );
+
+        // ズームが正しく更新されたか検証
+        let updated_settings = app.world().resource::<CameraSettings>();
+        assert!(updated_settings.orbit_distance > 20.0);
+    }
+
+    #[test]
+    fn test_handle_zoom_clamping() {
+        // テスト用アプリケーションをセットアップ
+        let mut app = App::new();
+
+        // 最小値でテスト
+        let mut settings = CameraSettings::default();
+        settings.orbit_distance = settings.min_orbit_distance;
+        app.insert_resource(settings);
+
+        // マウスホイールイベント（縮小しようとする）
+        let mut scroll_events = EventReader::<MouseWheel>::default();
+        let mut events = Events::<MouseWheel>::default();
+        events.send(MouseWheel {
+            unit: MouseScrollUnit::Line,
+            x: 0.0,
+            y: 1.0,
+        });
+        app.insert_events::<MouseWheel>();
+
+        // システムを実行
+        handle_zoom(
+            app.world_mut().resource_mut::<CameraSettings>().clone(),
+            app.world_mut()
+                .resource_mut::<Events<MouseWheel>>()
+                .get_reader(&mut scroll_events),
+        );
+
+        // 最小値でクランプされていることを確認
+        let updated_settings = app.world().resource::<CameraSettings>();
+        assert_eq!(
+            updated_settings.orbit_distance,
+            updated_settings.min_orbit_distance
+        );
+
+        // 最大値でテスト
+        let mut settings = CameraSettings::default();
+        settings.orbit_distance = settings.max_orbit_distance;
+        *app.world_mut().resource_mut::<CameraSettings>() = settings;
+
+        // マウスホイールイベント（拡大しようとする）
+        events.send(MouseWheel {
+            unit: MouseScrollUnit::Line,
+            x: 0.0,
+            y: -1.0,
+        });
+
+        // システムを実行
+        handle_zoom(
+            app.world_mut().resource_mut::<CameraSettings>().clone(),
+            app.world_mut()
+                .resource_mut::<Events<MouseWheel>>()
+                .get_reader(&mut scroll_events),
+        );
+
+        // 最大値でクランプされていることを確認
+        let updated_settings = app.world().resource::<CameraSettings>();
+        assert_eq!(
+            updated_settings.orbit_distance,
+            updated_settings.max_orbit_distance
+        );
+    }
+}
