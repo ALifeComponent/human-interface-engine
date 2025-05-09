@@ -1,5 +1,5 @@
-use bevy::{input::mouse::AccumulatedMouseMotion, prelude::*};
 use std::{f32::consts::FRAC_PI_2, ops::Range};
+use bevy::{input::mouse::AccumulatedMouseMotion, prelude::*};
 
 #[derive(Debug, Resource)]
 pub struct CameraSettings {
@@ -20,9 +20,9 @@ impl Default for CameraSettings {
             orbit_distance: 20.0,
             min_orbit_distance: 1.0,
             max_orbit_distance: 100.0,
-            pitch_speed: 0.003,
+            pitch_speed: -0.003,  // ピッチ方向のデフォルト速度を反転
             pitch_range: -pitch_limit..pitch_limit,
-            yaw_speed: 0.004,
+            yaw_speed: -0.004,    // ヨー方向のデフォルト速度を反転
             invert_pitch: false,
             invert_yaw: false,
         }
@@ -36,7 +36,7 @@ pub fn orbit(
     mouse_motion: Res<AccumulatedMouseMotion>,
 ) {
     let delta = mouse_motion.delta;
-
+    
     if mouse_buttons.pressed(MouseButton::Left) {
         let mut delta_pitch = delta.y * camera_settings.pitch_speed;
         let mut delta_yaw = delta.x * camera_settings.yaw_speed;
@@ -50,11 +50,9 @@ pub fn orbit(
         }
 
         let (yaw, pitch, _) = camera.rotation.to_euler(EulerRot::YXZ);
-
-        let new_pitch = (pitch + delta_pitch).clamp(
-            camera_settings.pitch_range.start,
-            camera_settings.pitch_range.end,
-        );
+        
+        let new_pitch = (pitch + delta_pitch)
+            .clamp(camera_settings.pitch_range.start, camera_settings.pitch_range.end);
         let new_yaw = yaw + delta_yaw;
 
         camera.rotation = Quat::from_euler(EulerRot::YXZ, new_yaw, new_pitch, 0.0);
