@@ -1,4 +1,5 @@
-use bevy::prelude::*;
+use bevy::{input::mouse::MouseWheel, prelude::*};
+use crate::camera::CameraSettings;
 
 pub fn handle_zoom(
     mut camera_settings: ResMut<CameraSettings>,
