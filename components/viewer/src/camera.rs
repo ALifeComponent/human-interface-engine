@@ -30,15 +30,11 @@ impl Default for CameraSettings {
 }
 
 pub fn orbit(
-    mut camera: Query<&mut Transform, With<Camera>>,
+    mut camera: Single<&mut Transform, With<Camera>>,
     camera_settings: ResMut<CameraSettings>,
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     mouse_motion: Res<AccumulatedMouseMotion>,
 ) {
-    let Ok(mut camera_transform) = camera.get_single_mut() else {
-        return;
-    };
-
     let delta = mouse_motion.delta;
 
     if mouse_buttons.pressed(MouseButton::Left) {
@@ -53,7 +49,7 @@ pub fn orbit(
             delta_yaw *= -1.0;
         }
 
-        let (yaw, pitch, _) = camera_transform.rotation.to_euler(EulerRot::YXZ);
+        let (yaw, pitch, _) = camera.rotation.to_euler(EulerRot::YXZ);
 
         let new_pitch = (pitch + delta_pitch).clamp(
             camera_settings.pitch_range.start,
@@ -61,12 +57,11 @@ pub fn orbit(
         );
         let new_yaw = yaw + delta_yaw;
 
-        camera_transform.rotation = Quat::from_euler(EulerRot::YXZ, new_yaw, new_pitch, 0.0);
+        camera.rotation = Quat::from_euler(EulerRot::YXZ, new_yaw, new_pitch, 0.0);
     }
 
     let target = Vec3::ZERO;
-    camera_transform.translation =
-        target - camera_transform.forward() * camera_settings.orbit_distance;
+    camera.translation = target - camera.forward() * camera_settings.orbit_distance;
 }
 
 #[cfg(test)]
@@ -89,7 +84,7 @@ mod tests {
         let mut mouse_motion = AccumulatedMouseMotion {
             delta: Vec2::new(100.0, 50.0),
         };
-        app.insert_resource(mouse_motion);
+        app.insert_resource(mouse_motion.clone());
 
         // マウスボタンの模擬
         let mut mouse_buttons = ButtonInput::<MouseButton>::default();
@@ -98,9 +93,7 @@ mod tests {
 
         // システムを実行
         orbit(
-            app.world_mut()
-                .query::<&mut Transform>()
-                .filter_with(|e| e == camera_entity),
+            Single(&mut transform),
             app.world().resource::<CameraSettings>().clone(),
             app.world().resource::<ButtonInput<MouseButton>>().clone(),
             app.world().resource::<AccumulatedMouseMotion>().clone(),
