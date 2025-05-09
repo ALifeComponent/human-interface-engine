@@ -35,7 +35,7 @@ pub fn orbit(
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     mouse_motion: Res<AccumulatedMouseMotion>,
 ) {
-    let Ok(mut camera_transform) = camera.single_mut() else {
+    let Ok(mut camera_transform) = camera.get_single_mut() else {
         return;
     };
 
