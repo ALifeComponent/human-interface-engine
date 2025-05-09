@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# Commit hook: run rustfmt and fail if formatting needed
+
+cargo fmt --all
+git add -u
+
+exit 0
