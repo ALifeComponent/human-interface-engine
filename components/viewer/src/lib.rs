@@ -1,6 +1,6 @@
 use std::{f32::consts::FRAC_PI_2, ops::Range};
 
-use bevy::{input::mouse::AccumulatedMouseMotion, prelude::*};
+use bevy::{input::mouse::MouseWheel, prelude::*};
 
 pub fn run_app() -> anyhow::Result<()> {
     App::new()
@@ -99,9 +99,15 @@ fn orbit(
     mut camera_settings: ResMut<CameraSettings>,
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     mouse_motion: Res<AccumulatedMouseMotion>,
+    mut scroll_events: EventReader<MouseWheel>,
 ) {
     let delta = mouse_motion.delta;
-    let scroll = mouse_motion.scroll_delta.y;
+    let mut scroll = 0.0;
+
+    // MouseWheelイベントからスクロール量を取得
+    for event in scroll_events.read() {
+        scroll += event.y;
+    }
 
     // Handle zoom with scroll wheel
     if scroll != 0.0 {
