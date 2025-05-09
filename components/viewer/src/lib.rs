@@ -1,16 +1,13 @@
 use std::{f32::consts::FRAC_PI_2, ops::Range};
 
-use bevy::{
-    input::mouse::{MouseScrollUnit, MouseWheel},
-    prelude::*,
-};
+use bevy::{input::mouse::AccumulatedMouseMotion, prelude::*};
 
 pub fn run_app() -> anyhow::Result<()> {
     App::new()
         .add_plugins(DefaultPlugins)
         .init_resource::<CameraSettings>()
         .add_systems(Startup, (setup, instructions))
-        .add_systems(Update, (camera_movement, zoom))
+        .add_systems(Update, orbit)
         .run();
 
     Ok(())
@@ -19,13 +16,12 @@ pub fn run_app() -> anyhow::Result<()> {
 #[derive(Debug, Resource)]
 struct CameraSettings {
     pub orbit_distance: f32,
+    pub min_orbit_distance: f32,
+    pub max_orbit_distance: f32,
     pub pitch_speed: f32,
     // Clamp pitch to this range
     pub pitch_range: Range<f32>,
-    pub roll_speed: f32,
     pub yaw_speed: f32,
-    pub pan_speed: f32,
-    pub zoom_speed: f32,
 }
 
 impl Default for CameraSettings {
@@ -36,12 +32,11 @@ impl Default for CameraSettings {
             // These values are completely arbitrary, chosen because they seem to produce
             // "sensible" results for this example. Adjust as required.
             orbit_distance: 20.0,
+            min_orbit_distance: 1.0,
+            max_orbit_distance: 100.0,
             pitch_speed: 0.003,
             pitch_range: -pitch_limit..pitch_limit,
-            roll_speed: 1.0,
             yaw_speed: 0.004,
-            pan_speed: 0.05,
-            zoom_speed: 1.5,
         }
     }
 }
@@ -87,9 +82,8 @@ fn instructions(mut commands: Commands) {
     commands.spawn((
         Name::new("Instructions"),
         Text::new(
-            "Mouse left drag: Pan\n\
-            Mouse move: Orbit\n\
-            Mouse wheel: Zoom",
+            "Left click + drag: rotate\n\
+            Scroll: zoom",
         ),
         Node {
             position_type: PositionType::Absolute,
@@ -100,82 +94,41 @@ fn instructions(mut commands: Commands) {
     ));
 }
 
-fn camera_movement(
-    mut camera: Query<&mut Transform, (With<Camera>, Without<CameraSettings>)>,
+fn orbit(
+    mut camera: Single<&mut Transform, With<Camera>>,
     mut camera_settings: ResMut<CameraSettings>,
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     mouse_motion: Res<AccumulatedMouseMotion>,
-    time: Res<Time>,
 ) {
-    if let Ok(mut transform) = camera.get_single_mut() {
-        let mut delta = mouse_motion.delta;
-        let mut pan = Vec2::ZERO;
+    let delta = mouse_motion.delta;
+    let scroll = mouse_motion.scroll_delta.y;
 
-        // Handle pan (left mouse button)
-        if mouse_buttons.pressed(MouseButton::Left) {
-            pan = Vec2::new(delta.x, delta.y) * camera_settings.pan_speed;
-            delta = Vec2::ZERO; // Don't orbit while panning
-        }
+    // Handle zoom with scroll wheel
+    if scroll != 0.0 {
+        let zoom_speed = 1.0;
+        let delta_distance = -scroll * zoom_speed;
+        camera_settings.orbit_distance = (camera_settings.orbit_distance + delta_distance)
+            .clamp(camera_settings.min_orbit_distance, camera_settings.max_orbit_distance);
+    }
 
-        // Calculate orbit rotation
+    // Handle rotation with left mouse button drag
+    if mouse_buttons.pressed(MouseButton::Left) {
         let delta_pitch = delta.y * camera_settings.pitch_speed;
         let delta_yaw = delta.x * camera_settings.yaw_speed;
 
-        // Obtain the existing pitch, yaw, and roll values from the transform.
-        let (yaw, pitch, roll) = transform.rotation.to_euler(EulerRot::YXZ);
+        // Obtain the existing pitch and yaw values from the transform.
+        let (yaw, pitch, _) = camera.rotation.to_euler(EulerRot::YXZ);
 
-        // Establish the new yaw and pitch, preventing the pitch value from exceeding our limits.
-        let pitch = (pitch + delta_pitch).clamp(
-            camera_settings.pitch_range.start,
-            camera_settings.pitch_range.end,
-        );
-        let yaw = yaw + delta_yaw;
+        // Calculate new pitch and yaw, applying limits
+        let new_pitch = (pitch + delta_pitch)
+            .clamp(camera_settings.pitch_range.start, camera_settings.pitch_range.end);
+        let new_yaw = yaw + delta_yaw;
 
         // Update camera rotation
-        transform.rotation = Quat::from_euler(EulerRot::YXZ, yaw, pitch, roll);
-
-        // Adjust the translation to maintain the correct orientation toward the orbit target.
-        let forward = transform.forward();
-        let right = transform.right();
-        let up = transform.up();
-
-        // Apply pan movement (local X/Y plane)
-        let target = Vec3::ZERO;
-        let mut new_target = target - forward * camera_settings.orbit_distance;
-        new_target += right * pan.x;
-        new_target += up * pan.y;
-
-        // Update camera position
-        camera_settings.orbit_distance = (new_target - target).length();
-        transform.translation = new_target;
-    }
-}
-
-fn zoom(
-    mut camera: Query<&mut Transform, (With<Camera>, Without<CameraSettings>)>,
-    mut camera_settings: ResMut<CameraSettings>,
-    mut mouse_wheel: EventReader<MouseWheel>,
-    time: Res<Time>,
-) {
-    let mut scroll = 0.0;
-    for ev in mouse_wheel.read() {
-        match ev.unit {
-            MouseScrollUnit::Line => scroll += ev.y,
-            MouseScrollUnit::Pixel => scroll += ev.y / 100.0,
-        }
+        camera.rotation = Quat::from_euler(EulerRot::YXZ, new_yaw, new_pitch, 0.0);
     }
 
-    if scroll != 0.0 && !camera.is_empty() {
-        let mut transform = camera.single_mut();
-        let forward = transform.forward();
-        let target = Vec3::ZERO;
-
-        // Adjust camera distance with zoom speed
-        let new_distance = (camera_settings.orbit_distance - scroll * camera_settings.zoom_speed * time.delta_seconds())
-            .clamp(1.0, 100.0);
-
-        // Update camera position and settings
-        transform.translation = target - forward * new_distance;
-        camera_settings.orbit_distance = new_distance;
-    }
+    // Adjust the translation to maintain the correct orientation toward the orbit target.
+    let target = Vec3::ZERO;
+    camera.translation = target - camera.forward() * camera_settings.orbit_distance;
 }
