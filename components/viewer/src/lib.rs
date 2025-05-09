@@ -44,6 +44,6 @@ fn toggle_input_system(
             ToggleAction::InvertYaw => "Invert Yaw: ",
         };
         
-        text.sections[0].value = format!("{}{}", label, state);
+        text.text = format!("{}{}", label, state);
     }
 }
