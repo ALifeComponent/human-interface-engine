@@ -9,6 +9,8 @@ pub struct CameraSettings {
     pub pitch_speed: f32,
     pub pitch_range: Range<f32>,
     pub yaw_speed: f32,
+    pub invert_pitch: bool,
+    pub invert_yaw: bool,
 }
 
 impl Default for CameraSettings {
@@ -21,6 +23,8 @@ impl Default for CameraSettings {
             pitch_speed: 0.003,
             pitch_range: -pitch_limit..pitch_limit,
             yaw_speed: 0.004,
+            invert_pitch: false,
+            invert_yaw: false,
         }
     }
 }
@@ -34,8 +38,16 @@ pub fn orbit(
     let delta = mouse_motion.delta;
     
     if mouse_buttons.pressed(MouseButton::Left) {
-        let delta_pitch = delta.y * camera_settings.pitch_speed;
-        let delta_yaw = delta.x * camera_settings.yaw_speed;
+        let mut delta_pitch = delta.y * camera_settings.pitch_speed;
+        let mut delta_yaw = delta.x * camera_settings.yaw_speed;
+
+        // 反転設定を適用
+        if camera_settings.invert_pitch {
+            delta_pitch *= -1.0;
+        }
+        if camera_settings.invert_yaw {
+            delta_yaw *= -1.0;
+        }
 
         let (yaw, pitch, _) = camera.rotation.to_euler(EulerRot::YXZ);
         
