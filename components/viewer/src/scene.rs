@@ -92,12 +92,11 @@ pub fn setup_ui(mut commands: Commands) {
 }
 
 #[derive(Component)]
-struct ToggleButton {
-    action: ToggleAction,
+pub struct ToggleButton {
+    pub action: ToggleAction,
 }
 
-#[derive(PartialEq, Eq)]
-enum ToggleAction {
+pub enum ToggleAction {
     InvertPitch,
     InvertYaw,
 }

@@ -31,7 +31,7 @@ impl Default for CameraSettings {
 
 pub fn orbit(
     mut camera: Single<&mut Transform, With<Camera>>,
-    mut camera_settings: ResMut<CameraSettings>,
+    camera_settings: ResMut<CameraSettings>,
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     mouse_motion: Res<AccumulatedMouseMotion>,
 ) {
