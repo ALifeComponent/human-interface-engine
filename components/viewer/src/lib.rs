@@ -1,6 +1,6 @@
 use std::{f32::consts::FRAC_PI_2, ops::Range};
 
-use bevy::{input::mouse::MouseWheel, prelude::*};
+use bevy::{input::mouse::{AccumulatedMouseMotion, MouseWheel}, prelude::*};
 
 pub fn run_app() -> anyhow::Result<()> {
     App::new()
