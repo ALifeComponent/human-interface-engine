@@ -10,4 +10,7 @@ release = []
 [dependencies]
 anyhow = "1.0.98"
 bevy = "0.16.0"
+prost = "0.13.5"
+tokio = { version = "1.45.0", features = ["rt-multi-thread", "macros"] }
+tonic = "0.13.1"
 
