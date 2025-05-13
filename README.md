@@ -4,14 +4,14 @@ This is the official implementation of the Human Interface Engine for the **ALif
 
 ## Setup
 
-To set up the project, follow these steps:
+For development setup, please follow these steps:
 
-1. First, initialize the project environment:
+1. Initialize the project environment:
    ```bash
    make init
    ```
    
-This will set up the necessary git hooks and prepare your environment for development.
+This command sets up the necessary git hooks and prepares your development environment.
 
 The Human Interface Engine serves as a core component group in the **ALifeComponent** system. It provides a unified interface for human interaction, along with a comprehensive suite of tools and libraries for building user interfaces, handling input events, and managing user interactions.
 
