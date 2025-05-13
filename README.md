@@ -10,7 +10,7 @@ For development setup, please follow these steps:
    ```bash
    make init
    ```
-   
+
 This command sets up the necessary git hooks and prepares your development environment.
 
 The Human Interface Engine serves as a core component group in the **ALifeComponent** system. It provides a unified interface for human interaction, along with a comprehensive suite of tools and libraries for building user interfaces, handling input events, and managing user interactions.
