@@ -1,3 +1,4 @@
+use crate::input::{ToggleAction, ToggleButton};
 use bevy::prelude::*;
 
 pub fn setup(
@@ -91,14 +92,4 @@ pub fn setup_ui(mut commands: Commands) {
                 },
             ));
         });
-}
-
-#[derive(Component)]
-pub struct ToggleButton {
-    pub action: ToggleAction,
-}
-
-pub enum ToggleAction {
-    InvertPitch,
-    InvertYaw,
 }
