@@ -2,6 +2,17 @@
 
 This is the official implementation of the Human Interface Engine for the **ALifeComponent** project.
 
+## Setup
+
+To set up the project, follow these steps:
+
+1. First, initialize the project environment:
+   ```bash
+   make init
+   ```
+   
+This will set up the necessary git hooks and prepare your environment for development.
+
 The Human Interface Engine serves as a core component group in the **ALifeComponent** system. It provides a unified interface for human interaction, along with a comprehensive suite of tools and libraries for building user interfaces, handling input events, and managing user interactions.
 
 ## Components
