@@ -1,5 +1,6 @@
 mod camera;
 mod input;
+mod rpc;
 mod scene;
 
 use bevy::prelude::*;
