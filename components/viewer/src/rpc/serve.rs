@@ -15,7 +15,7 @@ use tokio::runtime::Runtime;
 use tonic::{Response, transport::Server};
 
 #[derive(Default)]
-pub struct ManageObjectServiceImpl;
+pub struct ManageObjectServiceImpl {}
 
 #[tonic::async_trait]
 impl ManageObjectService for ManageObjectServiceImpl {
