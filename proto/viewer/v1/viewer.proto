@@ -2,18 +2,48 @@ syntax = "proto3";
 
 package viewer.v1;
 
-// The greeting service definition.
-service GreeterService {
-  // Sends a greeting
-  rpc SayHello(SayHelloRequest) returns (SayHelloResponse);
+service ManageObjectService {
+  // Sets the position of the object.
+  rpc SetObjectPosition(SetObjectPositionRequest) returns (SetObjectPositionResponse);
+  // Spawns a new object in the scene.
+  rpc SpawnObject(SpawnObjectRequest) returns (SpawnObjectResponse);
 }
 
-// The request message containing the user's name.
-message SayHelloRequest {
-  string name = 1;
+enum ObjectType {
+  OBJECT_TYPE_UNSPECIFIED = 0;
+  OBJECT_TYPE_CUBE = 1;
+  OBJECT_TYPE_SPHERE = 2;
 }
 
-// The response message containing the greetings
-message SayHelloResponse {
-  string message = 1;
+message ObjectId {
+  uint64 id = 1;
+}
+
+message Object {
+  ObjectId id = 1;
+  ObjectType type = 2;
+}
+
+message Coordinates {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message SetObjectPositionRequest {
+  ObjectId object_id = 1;
+  Coordinates position = 2;
+}
+
+message SetObjectPositionResponse {
+  bool success = 1;
+}
+
+message SpawnObjectRequest {
+  ObjectType object_type = 1;
+  Coordinates position = 2;
+}
+
+message SpawnObjectResponse {
+  ObjectId object_id = 1;
 }

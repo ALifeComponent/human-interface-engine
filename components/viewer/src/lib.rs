@@ -11,6 +11,7 @@ use scene::{instructions, setup, setup_ui};
 pub fn run_app() -> anyhow::Result<()> {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(rpc::RpcPlugin)
         .init_resource::<CameraSettings>()
         .add_systems(Startup, (setup, instructions, setup_ui))
         .add_systems(Update, (orbit, handle_zoom, toggle_input_system))
