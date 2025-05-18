@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package viewer.v1;
+
+import "viewer/v1/math.proto";
+
+enum ObjectType {
+  OBJECT_TYPE_UNSPECIFIED = 0;
+  OBJECT_TYPE_CUBE = 1;
+  OBJECT_TYPE_SPHERE = 2;
+}
+
+enum ObjectColorEnum {
+  OBJECT_COLOR_ENUM_UNSPECIFIED = 0;
+  OBJECT_COLOR_ENUM_RED = 1;
+  OBJECT_COLOR_ENUM_GREEN = 2;
+  OBJECT_COLOR_ENUM_BLUE = 3;
+}
+
+message ObjectColor {
+  // The color can be specified either as an enum or as an RGB vector. DON'T SET BOTH.
+  oneof color {
+    ObjectColorEnum color_enum = 1;
+    RGBA color_rgba = 2;
+  }
+}
+
+message ObjectProperties {
+  ObjectType type = 1;
+  ObjectColor color = 2;
+}
+
+message ObjectId {
+  Uuid uuid = 1;
+}
+
+message Object {
+  ObjectId id = 1;
+  ObjectProperties properties = 2;
+}

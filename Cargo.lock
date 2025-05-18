@@ -4679,10 +4679,12 @@ dependencies = [
  "anyhow",
  "bevy",
  "crossbeam-channel",
+ "once_cell",
  "prost",
  "tokio",
  "tonic",
  "tonic-build",
+ "uuid",
 ]
 
 [[package]]

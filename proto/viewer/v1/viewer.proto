@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package viewer.v1;
 
+import "viewer/v1/math.proto";
+import "viewer/v1/object.proto";
+
 service ManageObjectService {
   // Sets the position of the object.
   rpc SetObjectPosition(SetObjectPositionRequest) returns (SetObjectPositionResponse);
@@ -9,30 +12,9 @@ service ManageObjectService {
   rpc SpawnObject(SpawnObjectRequest) returns (SpawnObjectResponse);
 }
 
-enum ObjectType {
-  OBJECT_TYPE_UNSPECIFIED = 0;
-  OBJECT_TYPE_CUBE = 1;
-  OBJECT_TYPE_SPHERE = 2;
-}
-
-message ObjectId {
-  uint64 id = 1;
-}
-
-message Object {
-  ObjectId id = 1;
-  ObjectType type = 2;
-}
-
-message Coordinates {
-  float x = 1;
-  float y = 2;
-  float z = 3;
-}
-
 message SetObjectPositionRequest {
   ObjectId object_id = 1;
-  Coordinates position = 2;
+  Vector3 position = 2;
 }
 
 message SetObjectPositionResponse {
@@ -40,10 +22,10 @@ message SetObjectPositionResponse {
 }
 
 message SpawnObjectRequest {
-  ObjectType object_type = 1;
-  Coordinates position = 2;
+  ObjectProperties object_properties = 1;
+  Vector3 position = 2;
 }
 
 message SpawnObjectResponse {
-  ObjectId object_id = 1;
+  Object spawend_object = 1;
 }
