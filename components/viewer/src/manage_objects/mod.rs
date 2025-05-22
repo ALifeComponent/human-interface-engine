@@ -6,13 +6,13 @@ use std::fmt::Display;
 use bevy::prelude::*;
 use uuid::Uuid;
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Resource, Clone)]
 pub enum ObjectShape {
     Cube,
     Sphere,
 }
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Resource, Clone)]
 pub struct ObjectProperties {
     pub color: Color,
     pub size: f32,
@@ -30,14 +30,14 @@ impl Display for ObjectId {
     }
 }
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Resource, Clone)]
 pub struct SpawnObjectRequest {
     pub object_id: ObjectId,
     pub object_properties: ObjectProperties,
     pub position: Vec3,
 }
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Resource, Clone)]
 pub struct SpawnRequestPosition {
     pub current_position: usize,
 }

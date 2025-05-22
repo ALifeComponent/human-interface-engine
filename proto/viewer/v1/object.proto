@@ -4,10 +4,10 @@ package viewer.v1;
 
 import "viewer/v1/math.proto";
 
-enum ObjectType {
-  OBJECT_TYPE_UNSPECIFIED = 0;
-  OBJECT_TYPE_CUBE = 1;
-  OBJECT_TYPE_SPHERE = 2;
+enum ObjectShape {
+  OBJECT_SHAPE_UNSPECIFIED = 0;
+  OBJECT_SHAPE_CUBE = 1;
+  OBJECT_SHAPE_SPHERE = 2;
 }
 
 enum ObjectColorEnum {
@@ -25,9 +25,15 @@ message ObjectColor {
   }
 }
 
+message ObjectSize {
+  float value = 1;
+}
+
 message ObjectProperties {
-  ObjectType type = 1;
+  ObjectShape type = 1;
   ObjectColor color = 2;
+  // If not set, the default size is used.
+  optional ObjectSize size = 3;
 }
 
 message ObjectId {

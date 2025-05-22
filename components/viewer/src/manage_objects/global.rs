@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 use once_cell::sync::Lazy;
 
 use crate::types::ThreadSafeVecRw;
@@ -9,7 +11,7 @@ pub static SPAWN_OBJECT_REQUEST_LIST: Lazy<SpawnObjectRequestList> =
 
 #[derive(Debug)]
 pub struct SpawnObjectRequestList {
-    pub queue: ThreadSafeVecRw<SpawnObjectRequest>,
+    queue: ThreadSafeVecRw<SpawnObjectRequest>,
 }
 
 impl SpawnObjectRequestList {
@@ -17,5 +19,19 @@ impl SpawnObjectRequestList {
         SpawnObjectRequestList {
             queue: ThreadSafeVecRw::new(),
         }
+    }
+}
+
+impl Deref for SpawnObjectRequestList {
+    type Target = ThreadSafeVecRw<SpawnObjectRequest>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.queue
+    }
+}
+
+impl DerefMut for SpawnObjectRequestList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.queue
     }
 }

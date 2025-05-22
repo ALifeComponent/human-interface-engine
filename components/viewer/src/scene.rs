@@ -1,11 +1,7 @@
 use crate::input::{ToggleAction, ToggleButton};
 use bevy::prelude::*;
 
-pub fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+pub fn setup(mut commands: Commands) {
     commands.spawn((
         Name::new("Camera"),
         Camera3d::default(),
@@ -13,26 +9,15 @@ pub fn setup(
     ));
 
     commands.spawn((
-        Name::new("Plane"),
-        Mesh3d(meshes.add(Plane3d::default().mesh().size(5.0, 5.0))),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::srgb(0.3, 0.5, 0.3),
-            cull_mode: None,
-            ..default()
-        })),
-    ));
-
-    commands.spawn((
-        Name::new("Cube"),
-        Mesh3d(meshes.add(Cuboid::default())),
-        MeshMaterial3d(materials.add(Color::srgb(0.8, 0.7, 0.6))),
-        Transform::from_xyz(1.5, 0.51, 1.5),
-    ));
-
-    commands.spawn((
         Name::new("Light"),
-        PointLight::default(),
-        Transform::from_xyz(3.0, 8.0, 5.0),
+        DirectionalLight {
+            color: Color::WHITE,
+            illuminance: 10000.0,
+            shadows_enabled: false,
+            ..default()
+        },
+        Transform::from_xyz(0., 0., -5.0)
+            .with_rotation(Quat::from_rotation_x(-std::f32::consts::PI / 2.)),
     ));
 }
 

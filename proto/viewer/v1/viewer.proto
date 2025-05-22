@@ -10,6 +10,10 @@ service ManageObjectService {
   rpc SetObjectPosition(SetObjectPositionRequest) returns (SetObjectPositionResponse);
   // Spawns a new object in the scene.
   rpc SpawnObject(SpawnObjectRequest) returns (SpawnObjectResponse);
+  // Sets the position of multiple objects in a sequence.
+  rpc SetObjectPositionSequence(SetObjectPositionSequenceRequest) returns (SetObjectPositionSequenceResponse);
+  // Spawns multiple objects in a sequence.
+  rpc SpawnObjectSequence(SpawnObjectSequenceRequest) returns (SpawnObjectSequenceResponse);
 }
 
 message SetObjectPositionRequest {
@@ -21,6 +25,14 @@ message SetObjectPositionResponse {
   bool success = 1;
 }
 
+message SetObjectPositionSequenceRequest {
+  repeated SetObjectPositionRequest requests = 1;
+}
+
+message SetObjectPositionSequenceResponse {
+  repeated SetObjectPositionResponse responses = 1;
+}
+
 message SpawnObjectRequest {
   ObjectProperties object_properties = 1;
   Vector3 position = 2;
@@ -28,4 +40,12 @@ message SpawnObjectRequest {
 
 message SpawnObjectResponse {
   Object spawend_object = 1;
+}
+
+message SpawnObjectSequenceRequest {
+  repeated SpawnObjectRequest requests = 1;
+}
+
+message SpawnObjectSequenceResponse {
+  repeated SpawnObjectResponse responses = 1;
 }

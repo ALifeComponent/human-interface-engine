@@ -11,7 +11,7 @@ pub fn process_spawn_requests(
     let spawn_request = &SPAWN_OBJECT_REQUEST_LIST;
 
     {
-        let reader = spawn_request.queue.get_reader();
+        let reader = spawn_request.get_reader();
 
         if reader.is_err() {
             error!("Failed to get reader for spawn request queue");

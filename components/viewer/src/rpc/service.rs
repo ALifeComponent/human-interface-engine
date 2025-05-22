@@ -1,20 +1,22 @@
-use std::time::SystemTime;
+use thiserror::Error;
 
 use crate::manage_objects;
 use crate::manage_objects::global::SPAWN_OBJECT_REQUEST_LIST;
-use crate::rpc::proto::generated::{Object, ObjectColorEnum, ObjectId, ObjectProperties, Rgba};
+use crate::rpc::proto::generated::{
+    Object, ObjectColorEnum, ObjectId, ObjectProperties, ObjectSize, Rgba,
+};
 
 use super::proto::generated::manage_object_service_server::ManageObjectService;
 use super::proto::generated::object_color::Color;
 use super::proto::generated::{
-    ObjectColor, ObjectType, SetObjectPositionRequest, SetObjectPositionResponse,
-    SpawnObjectRequest, SpawnObjectResponse, Uuid,
+    ObjectColor, ObjectShape, SetObjectPositionRequest, SetObjectPositionResponse,
+    SetObjectPositionSequenceRequest, SetObjectPositionSequenceResponse, SpawnObjectRequest,
+    SpawnObjectResponse, SpawnObjectSequenceRequest, SpawnObjectSequenceResponse, Uuid,
 };
 
 use bevy::log::{info, warn};
 
 use bevy::math::Vec3;
-use prost::Message;
 use tonic::Response;
 
 #[derive(Default)]
@@ -28,17 +30,8 @@ impl ManageObjectService for ManageObjectServiceImpl {
         request: tonic::Request<SetObjectPositionRequest>,
     ) -> std::result::Result<tonic::Response<SetObjectPositionResponse>, tonic::Status> {
         let request = request.into_inner();
-        let SetObjectPositionRequest {
-            object_id,
-            position,
-        } = request;
 
-        info!(
-            "Received request to set position of object {:?} to {:?}",
-            object_id, position
-        );
-
-        return Ok(Response::new(SetObjectPositionResponse { success: true }));
+        todo!()
     }
 
     #[doc = " Spawns a new object in the scene."]
@@ -47,70 +40,41 @@ impl ManageObjectService for ManageObjectServiceImpl {
         request: tonic::Request<SpawnObjectRequest>,
     ) -> std::result::Result<tonic::Response<SpawnObjectResponse>, tonic::Status> {
         let request = request.into_inner();
-        let SpawnObjectRequest {
-            object_properties,
-            position,
-        } = request;
 
-        info!(
-            "Received request to spawn object {:?} at position {:?}",
-            object_properties, position
-        );
-
-        if position.is_none() {
-            return Err(tonic::Status::invalid_argument("Position is None"));
-        }
-        let position = position.unwrap();
-
-        // Validate the object properties
-        if object_properties.is_none() {
-            return Err(tonic::Status::invalid_argument("Object color is None"));
-        }
-        let object_properties = object_properties.unwrap();
-
-        if object_properties.color.is_none() {
-            return Err(tonic::Status::invalid_argument("Object color is None"));
-        }
-
-        let bevy_color: bevy::color::Color;
-        if let Ok(color) = normalize_object_color(object_properties.color.clone().unwrap()) {
-            bevy_color = color;
-            info!("Normalized object color: {:?}", color);
-        } else {
-            return Err(tonic::Status::invalid_argument("Invalid object color"));
-        }
-
-        let spawn_object_request = manage_objects::SpawnObjectRequest {
-            object_id: manage_objects::ObjectId {
-                uuid: uuid::Uuid::now_v7(),
-            },
-            object_properties: manage_objects::ObjectProperties {
-                color: bevy_color,
-                shape: match ObjectType::try_from(object_properties.r#type) {
-                    Ok(ObjectType::Cube) => manage_objects::ObjectShape::Cube,
-                    Ok(ObjectType::Sphere) => manage_objects::ObjectShape::Sphere,
-                    _ => return Err(tonic::Status::invalid_argument("Invalid object shape")),
-                },
-                size: 1.0, // TODO: Set size based on object properties
-            },
-            position: Vec3::new(position.x, position.y, position.z),
+        let internal_request = match spawn_object_request_to_internal_request(request) {
+            Ok(object) => object,
+            Err(e) => {
+                return match e {
+                    SpawnObjectError::InvalidObjectColor => {
+                        Err(tonic::Status::invalid_argument(e.to_string()))
+                    }
+                    SpawnObjectError::InvalidObjectShape => {
+                        Err(tonic::Status::invalid_argument(e.to_string()))
+                    }
+                    SpawnObjectError::InvalidPosition => {
+                        Err(tonic::Status::invalid_argument(e.to_string()))
+                    }
+                    SpawnObjectError::InvalidObjectProperties => {
+                        Err(tonic::Status::invalid_argument(e.to_string()))
+                    }
+                };
+            }
         };
 
-        let bevy_color_srgb = bevy_color.to_srgba();
+        info!("Internal request: {:?}", internal_request);
 
-        let spawned_object = Object {
+        SPAWN_OBJECT_REQUEST_LIST.push(internal_request.clone());
+
+        info!("Spawn request added to queue");
+
+        let bevy_color_srgb = internal_request.object_properties.color.to_srgba();
+        let object = Object {
             id: Some(ObjectId {
                 uuid: Some(Uuid {
-                    uuid: spawn_object_request
-                        .object_id
-                        .uuid
-                        .clone()
-                        .as_bytes()
-                        .to_vec(),
+                    uuid: internal_request.object_id.uuid.as_bytes().to_vec(),
                 }),
             }),
             properties: Some(ObjectProperties {
-                r#type: object_properties.r#type,
                 color: Some(ObjectColor {
                     color: Some(Color::ColorRgba(Rgba {
                         r: bevy_color_srgb.red,
@@ -119,18 +83,113 @@ impl ManageObjectService for ManageObjectServiceImpl {
                         a: bevy_color_srgb.alpha,
                     })),
                 }),
+                r#type: match internal_request.object_properties.shape {
+                    manage_objects::ObjectShape::Cube => ObjectShape::Cube,
+                    manage_objects::ObjectShape::Sphere => ObjectShape::Sphere,
+                }
+                .into(),
+                size: Some(ObjectSize {
+                    value: internal_request.object_properties.size,
+                }),
             }),
         };
 
-        // Add the spawn request to the queue
-        SPAWN_OBJECT_REQUEST_LIST.queue.push(spawn_object_request);
-
-        info!("Spawn request added to queue");
-
         Ok(Response::new(SpawnObjectResponse {
-            spawend_object: Some(spawned_object),
+            spawend_object: Some(object),
         }))
     }
+
+    #[doc = " Sets the position of multiple objects in a single request."]
+    async fn set_object_position_sequence(
+        &self,
+        request: tonic::Request<SetObjectPositionSequenceRequest>,
+    ) -> std::result::Result<tonic::Response<SetObjectPositionSequenceResponse>, tonic::Status>
+    {
+        todo!()
+    }
+
+    #[doc = " Spawns multiple objects in a single request."]
+    async fn spawn_object_sequence(
+        &self,
+        request: tonic::Request<SpawnObjectSequenceRequest>,
+    ) -> std::result::Result<tonic::Response<SpawnObjectSequenceResponse>, tonic::Status> {
+        let request = request.into_inner();
+        let SpawnObjectSequenceRequest { requests } = request;
+
+        let mut spawn_object_responses: Vec<SpawnObjectResponse> = Vec::new();
+
+        for (index, request) in requests.into_iter().enumerate() {
+            let response = self
+                .spawn_object(tonic::Request::new(request))
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(e.code(), format!("Index {index}; {}", e.message()))
+                })?;
+
+            spawn_object_responses.push(response.into_inner());
+        }
+
+        Ok(Response::new(SpawnObjectSequenceResponse {
+            responses: spawn_object_responses,
+        }))
+    }
+}
+
+#[derive(Error, Debug)]
+pub enum SpawnObjectError {
+    #[error("Invalid object color")]
+    InvalidObjectColor,
+    #[error("Invalid object shape")]
+    InvalidObjectShape,
+    #[error("Invalid position")]
+    InvalidPosition,
+    #[error("Invalid object properties")]
+    InvalidObjectProperties,
+}
+
+pub fn spawn_object_request_to_internal_request(
+    spawn_object_request: SpawnObjectRequest,
+) -> std::result::Result<manage_objects::SpawnObjectRequest, SpawnObjectError> {
+    let SpawnObjectRequest {
+        object_properties,
+        position,
+    } = spawn_object_request;
+
+    info!(
+        "Received request to spawn object {:?} at position {:?}",
+        object_properties, position
+    );
+
+    let position = position.ok_or(SpawnObjectError::InvalidPosition)?;
+
+    let object_properties = object_properties.ok_or(SpawnObjectError::InvalidObjectProperties)?;
+
+    let object_color = object_properties
+        .color
+        .ok_or(SpawnObjectError::InvalidObjectColor)?;
+
+    let object_size = object_properties.size.unwrap_or_default();
+
+    let bevy_color =
+        normalize_object_color(object_color).map_err(|_| SpawnObjectError::InvalidObjectColor)?;
+
+    let spawn_object_uuid = uuid::Uuid::now_v7();
+
+    Ok(manage_objects::SpawnObjectRequest {
+        object_id: manage_objects::ObjectId {
+            uuid: spawn_object_uuid,
+        },
+        object_properties: manage_objects::ObjectProperties {
+            color: bevy_color,
+            shape: match ObjectShape::try_from(object_properties.r#type) {
+                Ok(ObjectShape::Cube) => manage_objects::ObjectShape::Cube,
+                Ok(ObjectShape::Sphere) => manage_objects::ObjectShape::Sphere,
+                _ => return Err(SpawnObjectError::InvalidObjectShape),
+            },
+            size: object_size.value,
+        },
+        position: Vec3::new(position.x, position.y, position.z),
+    })
 }
 
 pub fn normalize_object_color(object_color: ObjectColor) -> anyhow::Result<bevy::color::Color> {
