@@ -1,7 +1,7 @@
 use thiserror::Error;
 
-use crate::manage_objects;
-use crate::manage_objects::global::SPAWN_OBJECT_REQUEST_LIST;
+use crate::manage_objects::global::REQUEST_LIST;
+use crate::manage_objects::request::{self, InternalRequest, object::ObjectRequest};
 
 use super::proto::generated::manage_object_service_server::ManageObjectService;
 use super::proto::generated::{
@@ -60,7 +60,9 @@ impl ManageObjectService for ManageObjectServiceImpl {
 
         info!("Internal request: {:?}", internal_request);
 
-        SPAWN_OBJECT_REQUEST_LIST.push(internal_request.clone());
+        REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::Spawn(
+            internal_request.clone(),
+        )));
 
         info!("Spawn request added to queue");
 
@@ -123,7 +125,7 @@ pub enum SpawnObjectError {
 
 pub fn spawn_object_request_to_internal_request(
     spawn_object_request: SpawnObjectRequest,
-) -> std::result::Result<manage_objects::SpawnObjectRequest, SpawnObjectError> {
+) -> std::result::Result<request::object::SpawnObjectRequest, SpawnObjectError> {
     let SpawnObjectRequest {
         object_properties,
         position,
@@ -149,15 +151,15 @@ pub fn spawn_object_request_to_internal_request(
 
     let spawn_object_uuid = uuid::Uuid::now_v7();
 
-    Ok(manage_objects::SpawnObjectRequest {
-        object_id: manage_objects::ObjectId {
+    Ok(request::object::SpawnObjectRequest {
+        object_id: request::object::ObjectId {
             uuid: spawn_object_uuid,
         },
-        object_properties: manage_objects::ObjectProperties {
+        object_properties: request::object::ObjectProperties {
             color: bevy_color,
             shape: match ObjectShape::try_from(object_properties.r#type) {
-                Ok(ObjectShape::Cube) => manage_objects::ObjectShape::Cube,
-                Ok(ObjectShape::Sphere) => manage_objects::ObjectShape::Sphere,
+                Ok(ObjectShape::Cube) => request::object::ObjectShape::Cube,
+                Ok(ObjectShape::Sphere) => request::object::ObjectShape::Sphere,
                 _ => return Err(SpawnObjectError::InvalidObjectShape),
             },
             size: object_size.value,

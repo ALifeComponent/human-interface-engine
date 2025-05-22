@@ -1,37 +1,28 @@
-use std::ops::{Deref, DerefMut};
+use std::ops::Deref;
 
 use once_cell::sync::Lazy;
 
 use crate::types::ThreadSafeVecRw;
 
-use super::SpawnObjectRequest;
-
-pub static SPAWN_OBJECT_REQUEST_LIST: Lazy<SpawnObjectRequestList> =
-    Lazy::new(SpawnObjectRequestList::new);
+pub static REQUEST_LIST: Lazy<RequestList> = Lazy::new(RequestList::new);
 
 #[derive(Debug)]
-pub struct SpawnObjectRequestList {
-    queue: ThreadSafeVecRw<SpawnObjectRequest>,
+pub struct RequestList {
+    list: ThreadSafeVecRw<super::request::InternalRequest>,
 }
 
-impl SpawnObjectRequestList {
+impl RequestList {
     pub fn new() -> Self {
-        SpawnObjectRequestList {
-            queue: ThreadSafeVecRw::new(),
+        RequestList {
+            list: ThreadSafeVecRw::new(),
         }
     }
 }
 
-impl Deref for SpawnObjectRequestList {
-    type Target = ThreadSafeVecRw<SpawnObjectRequest>;
+impl Deref for RequestList {
+    type Target = ThreadSafeVecRw<super::request::InternalRequest>;
 
     fn deref(&self) -> &Self::Target {
-        &self.queue
-    }
-}
-
-impl DerefMut for SpawnObjectRequestList {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.queue
+        &self.list
     }
 }
