@@ -231,7 +231,7 @@ pub fn spawn_object_request_to_internal_request(
 
     let spawn_object_uuid = uuid::Uuid::now_v7();
 
-    let spawn_requet = request::object::SpawnObjectRequest {
+    let spawn_request = request::object::SpawnObjectRequest {
         object_id: request::object::ObjectId {
             uuid: spawn_object_uuid,
         },
