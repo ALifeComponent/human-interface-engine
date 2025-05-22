@@ -249,7 +249,7 @@ pub fn spawn_object_request_to_internal_request(
         position: Vec3::new(position.x, position.y, position.z),
     };
 
-    Ok(spawn_requet)
+    Ok(spawn_request)
 }
 
 pub fn normalize_object_color(object_color: ObjectColor) -> anyhow::Result<bevy::color::Color> {
