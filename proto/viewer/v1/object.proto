@@ -30,7 +30,7 @@ message ObjectSize {
 }
 
 message ObjectProperties {
-  ObjectShape type = 1;
+  ObjectShape shape = 1;
   ObjectColor color = 2;
   // If not set, the default size is used.
   optional ObjectSize size = 3;

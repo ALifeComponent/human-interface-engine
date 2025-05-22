@@ -2,6 +2,7 @@ use thiserror::Error;
 
 use crate::manage_objects::global::REQUEST_LIST;
 use crate::manage_objects::request::{self, InternalRequest, object::ObjectRequest};
+use crate::rpc::proto::generated::ObjectSize;
 
 use super::proto::generated::manage_object_service_server::ManageObjectService;
 use super::proto::generated::{
@@ -144,7 +145,7 @@ pub fn spawn_object_request_to_internal_request(
         .color
         .ok_or(SpawnObjectError::InvalidObjectColor)?;
 
-    let object_size = object_properties.size.unwrap_or_default();
+    let object_size = object_properties.size.unwrap_or(ObjectSize { value: 1.0 });
 
     let bevy_color =
         normalize_object_color(object_color).map_err(|_| SpawnObjectError::InvalidObjectColor)?;
@@ -157,7 +158,7 @@ pub fn spawn_object_request_to_internal_request(
         },
         object_properties: request::object::ObjectProperties {
             color: bevy_color,
-            shape: match ObjectShape::try_from(object_properties.r#type) {
+            shape: match ObjectShape::try_from(object_properties.shape) {
                 Ok(ObjectShape::Cube) => request::object::ObjectShape::Cube,
                 Ok(ObjectShape::Sphere) => request::object::ObjectShape::Sphere,
                 _ => return Err(SpawnObjectError::InvalidObjectShape),

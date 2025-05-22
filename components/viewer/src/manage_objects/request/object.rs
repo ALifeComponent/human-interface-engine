@@ -34,6 +34,10 @@ impl SetObjectPositionRequest {
         for event in event_reader.read() {
             for (object_id, mut transform) in query.iter_mut() {
                 if *object_id == event.object_id {
+                    info!(
+                        "Setting position of object {} to {:?}",
+                        object_id, event.position
+                    );
                     transform.translation = event.position;
                 }
             }
@@ -61,6 +65,7 @@ impl SpawnObjectRequest {
             // Spawn the object based on the event properties
             match object_properties.shape {
                 ObjectShape::Cube => {
+                    info!("Spawning cube with size: {}", object_properties.size);
                     commands.spawn((
                         event.object_id.clone(),
                         Name::new(event.object_id.to_string()),
@@ -73,6 +78,7 @@ impl SpawnObjectRequest {
                     ));
                 }
                 ObjectShape::Sphere => {
+                    info!("Spawning sphere with size: {}", object_properties.size);
                     commands.spawn((
                         event.object_id.clone(),
                         Name::new(event.object_id.to_string()),
