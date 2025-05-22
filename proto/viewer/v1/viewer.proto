@@ -39,7 +39,7 @@ message SpawnObjectRequest {
 }
 
 message SpawnObjectResponse {
-  Object spawend_object = 1;
+  ObjectId spawend_object_id = 1;
 }
 
 message SpawnObjectSequenceRequest {

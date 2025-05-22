@@ -2,16 +2,13 @@ use thiserror::Error;
 
 use crate::manage_objects;
 use crate::manage_objects::global::SPAWN_OBJECT_REQUEST_LIST;
-use crate::rpc::proto::generated::{
-    Object, ObjectColorEnum, ObjectId, ObjectProperties, ObjectSize, Rgba,
-};
 
 use super::proto::generated::manage_object_service_server::ManageObjectService;
-use super::proto::generated::object_color::Color;
 use super::proto::generated::{
-    ObjectColor, ObjectShape, SetObjectPositionRequest, SetObjectPositionResponse,
-    SetObjectPositionSequenceRequest, SetObjectPositionSequenceResponse, SpawnObjectRequest,
-    SpawnObjectResponse, SpawnObjectSequenceRequest, SpawnObjectSequenceResponse, Uuid,
+    ObjectColor, ObjectColorEnum, ObjectId, ObjectShape, SetObjectPositionRequest,
+    SetObjectPositionResponse, SetObjectPositionSequenceRequest, SetObjectPositionSequenceResponse,
+    SpawnObjectRequest, SpawnObjectResponse, SpawnObjectSequenceRequest,
+    SpawnObjectSequenceResponse, Uuid, object_color,
 };
 
 use bevy::log::{info, warn};
@@ -67,35 +64,12 @@ impl ManageObjectService for ManageObjectServiceImpl {
 
         info!("Spawn request added to queue");
 
-        let bevy_color_srgb = internal_request.object_properties.color.to_srgba();
-        let object = Object {
-            id: Some(ObjectId {
+        Ok(Response::new(SpawnObjectResponse {
+            spawend_object_id: Some(ObjectId {
                 uuid: Some(Uuid {
                     uuid: internal_request.object_id.uuid.as_bytes().to_vec(),
                 }),
             }),
-            properties: Some(ObjectProperties {
-                color: Some(ObjectColor {
-                    color: Some(Color::ColorRgba(Rgba {
-                        r: bevy_color_srgb.red,
-                        g: bevy_color_srgb.green,
-                        b: bevy_color_srgb.blue,
-                        a: bevy_color_srgb.alpha,
-                    })),
-                }),
-                r#type: match internal_request.object_properties.shape {
-                    manage_objects::ObjectShape::Cube => ObjectShape::Cube,
-                    manage_objects::ObjectShape::Sphere => ObjectShape::Sphere,
-                }
-                .into(),
-                size: Some(ObjectSize {
-                    value: internal_request.object_properties.size,
-                }),
-            }),
-        };
-
-        Ok(Response::new(SpawnObjectResponse {
-            spawend_object: Some(object),
         }))
     }
 
@@ -195,13 +169,10 @@ pub fn spawn_object_request_to_internal_request(
 pub fn normalize_object_color(object_color: ObjectColor) -> anyhow::Result<bevy::color::Color> {
     let ObjectColor { color } = object_color;
 
-    if color.is_none() {
-        return Err(anyhow::anyhow!("Object color is None"));
-    }
-    let color: Color = color.unwrap();
+    let color = color.ok_or_else(|| anyhow::anyhow!("Object color is None"))?;
 
     let bevy_color = match color {
-        Color::ColorEnum(n) => {
+        object_color::Color::ColorEnum(n) => {
             let color = ObjectColorEnum::try_from(n)?;
             match color {
                 ObjectColorEnum::Blue => bevy::color::Color::srgb(0.0, 0.0, 1.0),
@@ -213,7 +184,7 @@ pub fn normalize_object_color(object_color: ObjectColor) -> anyhow::Result<bevy:
                 }
             }
         }
-        Color::ColorRgba(rgba) => {
+        object_color::Color::ColorRgba(rgba) => {
             info!("Object color is RGBA: {:?}", rgba);
             if (rgba.r > 1.0 || rgba.g > 1.0 || rgba.b > 1.0 || rgba.a > 1.0)
                 || (rgba.r < 0.0 || rgba.g < 0.0 || rgba.b < 0.0 || rgba.a < 0.0)
