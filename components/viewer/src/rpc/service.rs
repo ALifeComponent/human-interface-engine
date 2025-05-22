@@ -1,7 +1,8 @@
 use thiserror::Error;
 
-use crate::manage_objects;
-use crate::manage_objects::global::SPAWN_OBJECT_REQUEST_LIST;
+use crate::manage_objects::global::REQUEST_LIST;
+use crate::manage_objects::request::{self, InternalRequest, object::ObjectRequest};
+use crate::rpc::proto::generated::ObjectSize;
 
 use super::proto::generated::manage_object_service_server::ManageObjectService;
 use super::proto::generated::{
@@ -28,7 +29,29 @@ impl ManageObjectService for ManageObjectServiceImpl {
     ) -> std::result::Result<tonic::Response<SetObjectPositionResponse>, tonic::Status> {
         let request = request.into_inner();
 
-        todo!()
+        let internal_request = match set_position_request_to_internal_request(request) {
+            Ok(object) => object,
+            Err(e) => {
+                return match e {
+                    SetObjectPositionError::InvalidObjectId => {
+                        Err(tonic::Status::invalid_argument(e.to_string()))
+                    }
+                    SetObjectPositionError::InvalidPosition => {
+                        Err(tonic::Status::invalid_argument(e.to_string()))
+                    }
+                };
+            }
+        };
+
+        info!("Internal request: {:?}", internal_request);
+
+        REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::SetPosition(
+            internal_request.clone(),
+        )));
+
+        info!("Set position request added to queue");
+
+        Ok(Response::new(SetObjectPositionResponse { success: true }))
     }
 
     #[doc = " Spawns a new object in the scene."]
@@ -60,14 +83,16 @@ impl ManageObjectService for ManageObjectServiceImpl {
 
         info!("Internal request: {:?}", internal_request);
 
-        SPAWN_OBJECT_REQUEST_LIST.push(internal_request.clone());
+        REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::Spawn(
+            internal_request.clone(),
+        )));
 
         info!("Spawn request added to queue");
 
         Ok(Response::new(SpawnObjectResponse {
             spawend_object_id: Some(ObjectId {
                 uuid: Some(Uuid {
-                    uuid: internal_request.object_id.uuid.as_bytes().to_vec(),
+                    value: internal_request.object_id.uuid.as_bytes().to_vec(),
                 }),
             }),
         }))
@@ -79,7 +104,26 @@ impl ManageObjectService for ManageObjectServiceImpl {
         request: tonic::Request<SetObjectPositionSequenceRequest>,
     ) -> std::result::Result<tonic::Response<SetObjectPositionSequenceResponse>, tonic::Status>
     {
-        todo!()
+        let request = request.into_inner();
+        let SetObjectPositionSequenceRequest { requests } = request;
+
+        let mut set_object_responses: Vec<SetObjectPositionResponse> = Vec::new();
+
+        for (index, request) in requests.into_iter().enumerate() {
+            let response = self
+                .set_object_position(tonic::Request::new(request))
+                .await
+                .map_err(|e| {
+                    let errror_message = e.message();
+                    tonic::Status::new(e.code(), format!("Index {index}; {errror_message}"))
+                })?;
+
+            set_object_responses.push(response.into_inner());
+        }
+
+        Ok(Response::new(SetObjectPositionSequenceResponse {
+            responses: set_object_responses,
+        }))
     }
 
     #[doc = " Spawns multiple objects in a single request."]
@@ -97,7 +141,8 @@ impl ManageObjectService for ManageObjectServiceImpl {
                 .spawn_object(tonic::Request::new(request))
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(e.code(), format!("Index {index}; {}", e.message()))
+                    let errror_message = e.message();
+                    tonic::Status::new(e.code(), format!("Index {index}; {errror_message}"))
                 })?;
 
             spawn_object_responses.push(response.into_inner());
@@ -107,6 +152,45 @@ impl ManageObjectService for ManageObjectServiceImpl {
             responses: spawn_object_responses,
         }))
     }
+}
+
+#[derive(Error, Debug)]
+pub enum SetObjectPositionError {
+    #[error("Invalid object ID")]
+    InvalidObjectId,
+    #[error("Invalid position")]
+    InvalidPosition,
+}
+
+pub fn set_position_request_to_internal_request(
+    set_position_request: SetObjectPositionRequest,
+) -> std::result::Result<request::object::SetObjectPositionRequest, SetObjectPositionError> {
+    let SetObjectPositionRequest {
+        object_id,
+        position,
+    } = set_position_request;
+
+    info!(
+        "Received request to set object position {:?} to {:?}",
+        object_id, position
+    );
+
+    let object_id = object_id.ok_or(SetObjectPositionError::InvalidObjectId)?;
+    let uuid = object_id
+        .uuid
+        .ok_or(SetObjectPositionError::InvalidObjectId)?;
+
+    let position = position.ok_or(SetObjectPositionError::InvalidPosition)?;
+
+    let internal_request = request::object::SetObjectPositionRequest {
+        object_id: request::object::ObjectId {
+            uuid: uuid::Uuid::from_slice(uuid.value.as_slice())
+                .map_err(|_| SetObjectPositionError::InvalidObjectId)?,
+        },
+        position: Vec3::new(position.x, position.y, position.z),
+    };
+
+    Ok(internal_request)
 }
 
 #[derive(Error, Debug)]
@@ -123,7 +207,7 @@ pub enum SpawnObjectError {
 
 pub fn spawn_object_request_to_internal_request(
     spawn_object_request: SpawnObjectRequest,
-) -> std::result::Result<manage_objects::SpawnObjectRequest, SpawnObjectError> {
+) -> std::result::Result<request::object::SpawnObjectRequest, SpawnObjectError> {
     let SpawnObjectRequest {
         object_properties,
         position,
@@ -142,28 +226,30 @@ pub fn spawn_object_request_to_internal_request(
         .color
         .ok_or(SpawnObjectError::InvalidObjectColor)?;
 
-    let object_size = object_properties.size.unwrap_or_default();
+    let object_size = object_properties.size.unwrap_or(ObjectSize { value: 1.0 });
 
     let bevy_color =
         normalize_object_color(object_color).map_err(|_| SpawnObjectError::InvalidObjectColor)?;
 
     let spawn_object_uuid = uuid::Uuid::now_v7();
 
-    Ok(manage_objects::SpawnObjectRequest {
-        object_id: manage_objects::ObjectId {
+    let spawn_request = request::object::SpawnObjectRequest {
+        object_id: request::object::ObjectId {
             uuid: spawn_object_uuid,
         },
-        object_properties: manage_objects::ObjectProperties {
+        object_properties: request::object::ObjectProperties {
             color: bevy_color,
-            shape: match ObjectShape::try_from(object_properties.r#type) {
-                Ok(ObjectShape::Cube) => manage_objects::ObjectShape::Cube,
-                Ok(ObjectShape::Sphere) => manage_objects::ObjectShape::Sphere,
+            shape: match ObjectShape::try_from(object_properties.shape) {
+                Ok(ObjectShape::Cube) => request::object::ObjectShape::Cube,
+                Ok(ObjectShape::Sphere) => request::object::ObjectShape::Sphere,
                 _ => return Err(SpawnObjectError::InvalidObjectShape),
             },
             size: object_size.value,
         },
         position: Vec3::new(position.x, position.y, position.z),
-    })
+    };
+
+    Ok(spawn_request)
 }
 
 pub fn normalize_object_color(object_color: ObjectColor) -> anyhow::Result<bevy::color::Color> {

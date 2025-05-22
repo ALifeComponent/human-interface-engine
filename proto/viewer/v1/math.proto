@@ -30,5 +30,5 @@ message RGBA {
 
 // Represents a UUID v7 (128-bit) value.
 message Uuid {
-  bytes uuid = 1;
+  bytes value = 1;
 }
