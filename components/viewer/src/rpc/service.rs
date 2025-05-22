@@ -92,7 +92,7 @@ impl ManageObjectService for ManageObjectServiceImpl {
         Ok(Response::new(SpawnObjectResponse {
             spawend_object_id: Some(ObjectId {
                 uuid: Some(Uuid {
-                    bytes: internal_request.object_id.uuid.as_bytes().to_vec(),
+                    value: internal_request.object_id.uuid.as_bytes().to_vec(),
                 }),
             }),
         }))
@@ -114,7 +114,8 @@ impl ManageObjectService for ManageObjectServiceImpl {
                 .set_object_position(tonic::Request::new(request))
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(e.code(), format!("Index {index}; {}", e.message()))
+                    let errror_message = e.message();
+                    tonic::Status::new(e.code(), format!("Index {index}; {errror_message}"))
                 })?;
 
             set_object_responses.push(response.into_inner());
@@ -140,7 +141,8 @@ impl ManageObjectService for ManageObjectServiceImpl {
                 .spawn_object(tonic::Request::new(request))
                 .await
                 .map_err(|e| {
-                    tonic::Status::new(e.code(), format!("Index {index}; {}", e.message()))
+                    let errror_message = e.message();
+                    tonic::Status::new(e.code(), format!("Index {index}; {errror_message}"))
                 })?;
 
             spawn_object_responses.push(response.into_inner());
@@ -182,7 +184,7 @@ pub fn set_position_request_to_internal_request(
 
     let internal_request = request::object::SetObjectPositionRequest {
         object_id: request::object::ObjectId {
-            uuid: uuid::Uuid::from_slice(uuid.bytes.as_slice())
+            uuid: uuid::Uuid::from_slice(uuid.value.as_slice())
                 .map_err(|_| SetObjectPositionError::InvalidObjectId)?,
         },
         position: Vec3::new(position.x, position.y, position.z),
