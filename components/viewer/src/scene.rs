@@ -1,13 +1,17 @@
 use crate::input::{ToggleAction, ToggleButton};
 use bevy::prelude::*;
 
-pub fn setup(mut commands: Commands) {
-    commands.spawn((
-        Name::new("Camera"),
-        Camera3d::default(),
-        Transform::from_xyz(5.0, 5.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
-    ));
+pub struct ScenePlugin;
 
+impl Plugin for ScenePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, setup)
+            .add_systems(Startup, instructions)
+            .add_systems(Startup, setup_ui);
+    }
+}
+
+pub fn setup(mut commands: Commands) {
     commands.spawn((
         Name::new("Light"),
         DirectionalLight {
@@ -27,6 +31,7 @@ pub fn instructions(mut commands: Commands) {
         Text::new(
             "Left click + drag: rotate\n\
             Scroll: zoom\n\
+            [W][A][S][D]: move\n\
             [P] Toggle pitch inversion\n\
             [Y] Toggle yaw inversion",
         ),
