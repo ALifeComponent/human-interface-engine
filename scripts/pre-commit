@@ -3,6 +3,7 @@
 # Commit hook: run rustfmt and fail if formatting needed
 
 cargo fmt --all
+pnpm buf format -w
 git add -u
 
 exit 0
