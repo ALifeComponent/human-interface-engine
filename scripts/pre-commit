@@ -2,8 +2,7 @@
 
 # Commit hook: run rustfmt and fail if formatting needed
 
-cargo fmt --all
-pnpm buf format -w
-git add -u
+cargo fmt --check
+pnpm buf format --exit-code
 
 exit 0
