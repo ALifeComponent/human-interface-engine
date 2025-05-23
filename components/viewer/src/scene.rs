@@ -32,6 +32,7 @@ pub fn instructions(mut commands: Commands) {
             "Left click + drag: rotate\n\
             Scroll: zoom\n\
             [W][A][S][D]: move\n\
+            [Middle Click + Drag]: pan\n\
             [P] Toggle pitch inversion\n\
             [Y] Toggle yaw inversion",
         ),
