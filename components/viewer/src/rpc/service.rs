@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::manage_objects::global::REQUEST_LIST;
+use crate::manage_objects::global::INTERNAL_REQUEST_LIST;
 use crate::manage_objects::request::{self, InternalRequest, object::ObjectRequest};
 use crate::rpc::proto::generated::ObjectSize;
 
@@ -45,7 +45,7 @@ impl ManageObjectService for ManageObjectServiceImpl {
 
         info!("Internal request: {:?}", internal_request);
 
-        REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::SetPosition(
+        INTERNAL_REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::SetPosition(
             internal_request.clone(),
         )));
 
@@ -83,7 +83,7 @@ impl ManageObjectService for ManageObjectServiceImpl {
 
         info!("Internal request: {:?}", internal_request);
 
-        REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::Spawn(
+        INTERNAL_REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::Spawn(
             internal_request.clone(),
         )));
 

@@ -4,22 +4,22 @@ use once_cell::sync::Lazy;
 
 use crate::types::ThreadSafeVecRw;
 
-pub static REQUEST_LIST: Lazy<RequestList> = Lazy::new(RequestList::new);
+pub static INTERNAL_REQUEST_LIST: Lazy<InternalRequestList> = Lazy::new(InternalRequestList::new);
 
 #[derive(Debug)]
-pub struct RequestList {
+pub struct InternalRequestList {
     list: ThreadSafeVecRw<super::request::InternalRequest>,
 }
 
-impl RequestList {
+impl InternalRequestList {
     pub fn new() -> Self {
-        RequestList {
+        InternalRequestList {
             list: ThreadSafeVecRw::new(),
         }
     }
 }
 
-impl Deref for RequestList {
+impl Deref for InternalRequestList {
     type Target = ThreadSafeVecRw<super::request::InternalRequest>;
 
     fn deref(&self) -> &Self::Target {

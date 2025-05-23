@@ -2,7 +2,7 @@ pub mod object;
 
 use bevy::prelude::*;
 
-use super::global::REQUEST_LIST;
+use super::global::INTERNAL_REQUEST_LIST;
 
 pub struct InternalRequestPlugin;
 
@@ -18,7 +18,7 @@ pub fn process_requests(
     mut spawn_request_event: EventWriter<object::SpawnObjectRequest>,
     mut set_position_request_event: EventWriter<object::SetObjectPositionRequest>,
 ) {
-    let reader = REQUEST_LIST.get_reader();
+    let reader = INTERNAL_REQUEST_LIST.get_reader();
     if reader.is_err() {
         error!("Failed to get reader for request queue");
         return;
