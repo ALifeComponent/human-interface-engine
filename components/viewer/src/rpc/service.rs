@@ -12,7 +12,7 @@ use super::proto::generated::{
     SpawnObjectSequenceResponse, Uuid, object_color,
 };
 
-use bevy::log::{info, warn};
+use bevy::log::{info, info_span, warn};
 
 use bevy::math::Vec3;
 use tonic::Response;
@@ -27,6 +27,9 @@ impl ManageObjectService for ManageObjectServiceImpl {
         &self,
         request: tonic::Request<SetObjectPositionRequest>,
     ) -> std::result::Result<tonic::Response<SetObjectPositionResponse>, tonic::Status> {
+        // Create a span for tracing
+        let _span = info_span!("set_object_position_rpc").entered();
+
         let request = request.into_inner();
 
         let internal_request = match set_position_request_to_internal_request(request) {
@@ -59,6 +62,8 @@ impl ManageObjectService for ManageObjectServiceImpl {
         &self,
         request: tonic::Request<SpawnObjectRequest>,
     ) -> std::result::Result<tonic::Response<SpawnObjectResponse>, tonic::Status> {
+        let _span = info_span!("spawn_object_rpc").entered();
+
         let request = request.into_inner();
 
         let internal_request = match spawn_object_request_to_internal_request(request) {
