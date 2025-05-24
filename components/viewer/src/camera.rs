@@ -46,7 +46,7 @@ impl Default for CameraSettings {
             yaw_speed: -0.004,
             invert_pitch: false,
             invert_yaw: false,
-            move_speed: 10.0,
+            move_speed: 30.0,
         }
     }
 }
