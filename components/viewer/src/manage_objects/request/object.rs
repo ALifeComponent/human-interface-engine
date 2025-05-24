@@ -1,4 +1,4 @@
-use bevy::prelude::{Time, *};
+use bevy::prelude::*;
 use std::fmt::Display;
 use uuid::Uuid;
 
@@ -14,17 +14,21 @@ impl Default for SmoothMovementSettings {
     }
 }
 
+// 各オブジェクトの現在ターゲット位置を保持するコンポーネント
+#[derive(Component)]
+pub struct TargetPosition(pub Vec3);
+
 pub struct ObjectRequestPlugin;
 
 impl Plugin for ObjectRequestPlugin {
     fn build(&self, app: &mut App) {
         app
-            // 補間速度の初期値を 5.0 に設定
             .init_resource::<SmoothMovementSettings>()
+            .add_event::<SpawnObjectRequest>()
+            .add_systems(Update, SpawnObjectRequest::event_handler)
             .add_event::<SetObjectPositionRequest>()
             .add_systems(Update, SetObjectPositionRequest::event_handler)
-            .add_event::<SpawnObjectRequest>()
-            .add_systems(Update, SpawnObjectRequest::event_handler);
+            .add_systems(Update, smooth_movement_system);
     }
 }
 
@@ -43,20 +47,16 @@ pub struct SetObjectPositionRequest {
 impl SetObjectPositionRequest {
     pub fn event_handler(
         mut event_reader: EventReader<Self>,
-        mut query: Query<(&ObjectId, &mut Transform)>,
-        time: Res<Time>,
-        settings: Res<SmoothMovementSettings>,
+        mut query: Query<(&ObjectId, &mut TargetPosition)>,
     ) {
         for event in event_reader.read() {
-            for (object_id, mut transform) in query.iter_mut() {
+            for (object_id, mut target_pos) in query.iter_mut() {
                 if *object_id == event.object_id {
                     info!(
-                        "Setting position of object {} to {:?}",
+                        "Updating target position of object {} to {:?}",
                         object_id, event.position
                     );
-                    // Resource で指定した速度で線形補間
-                    let alpha = (time.delta_secs() * settings.speed).clamp(0.0, 1.0);
-                    transform.translation = transform.translation.lerp(event.position, alpha);
+                    target_pos.0 = event.position;
                 }
             }
         }
@@ -78,38 +78,51 @@ impl SpawnObjectRequest {
         mut materials: ResMut<Assets<StandardMaterial>>,
     ) {
         for event in event_reader.read() {
-            let object_properties = &event.object_properties;
-
-            // Spawn the object based on the event properties
-            match object_properties.shape {
+            let props = &event.object_properties;
+            let pos = event.position;
+            match props.shape {
                 ObjectShape::Cube => {
-                    info!("Spawning cube with size: {}", object_properties.size);
+                    info!("Spawning cube with size: {}", props.size);
                     commands.spawn((
                         event.object_id.clone(),
                         Name::new(event.object_id.to_string()),
-                        Mesh3d(meshes.add(Cuboid::from_size(Vec3::splat(object_properties.size)))),
+                        Mesh3d(meshes.add(Cuboid::from_size(Vec3::splat(props.size)))),
                         MeshMaterial3d(materials.add(StandardMaterial {
-                            base_color: event.object_properties.color,
+                            base_color: props.color,
                             ..default()
                         })),
-                        Transform::from_translation(event.position),
+                        Transform::from_translation(pos),
+                        TargetPosition(pos),
                     ));
                 }
                 ObjectShape::Sphere => {
-                    info!("Spawning sphere with size: {}", object_properties.size);
+                    info!("Spawning sphere with size: {}", props.size);
                     commands.spawn((
                         event.object_id.clone(),
                         Name::new(event.object_id.to_string()),
-                        Mesh3d(meshes.add(Sphere::new(object_properties.size))),
+                        Mesh3d(meshes.add(Sphere::new(props.size))),
                         MeshMaterial3d(materials.add(StandardMaterial {
-                            base_color: event.object_properties.color,
+                            base_color: props.color,
                             ..default()
                         })),
-                        Transform::from_translation(event.position),
+                        Transform::from_translation(pos),
+                        TargetPosition(pos),
                     ));
                 }
             }
         }
+    }
+}
+
+// 滑らか移動用システム：毎フレーム、Transform を TargetPosition に向かって線形補間する
+fn smooth_movement_system(
+    time: Res<Time>,
+    settings: Res<SmoothMovementSettings>,
+    mut query: Query<(&mut Transform, &TargetPosition)>,
+) {
+    let alpha = (time.delta_seconds() * settings.speed).clamp(0.0, 1.0);
+    for (mut transform, target) in query.iter_mut() {
+        transform.translation = transform.translation.lerp(target.0, alpha);
     }
 }
 
