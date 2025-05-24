@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use bevy::prelude::*;
+use bevy::prelude::{Time, *};
 use uuid::Uuid;
 
 pub struct ObjectRequestPlugin;
@@ -30,6 +30,7 @@ impl SetObjectPositionRequest {
     pub fn event_handler(
         mut event_reader: EventReader<Self>,
         mut query: Query<(&ObjectId, &mut Transform)>,
+        time: Res<Time>,
     ) {
         for event in event_reader.read() {
             for (object_id, mut transform) in query.iter_mut() {
@@ -38,7 +39,9 @@ impl SetObjectPositionRequest {
                         "Setting position of object {} to {:?}",
                         object_id, event.position
                     );
-                    transform.translation = event.position;
+                    // 線形補間で滑らかに移動
+                    let alpha = (time.delta_seconds() * 5.0).clamp(0.0, 1.0);
+                    transform.translation = transform.translation.lerp(event.position, alpha);
                 }
             }
         }
