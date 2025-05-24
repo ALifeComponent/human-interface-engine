@@ -27,6 +27,7 @@ pub struct TargetPosition(pub Vec3);
 pub struct ObjectRequestPlugin;
 
 impl Plugin for ObjectRequestPlugin {
+    /// Initializes smooth movement settings and registers object request systems.
     fn build(&self, app: &mut App) {
         app
             // Resource を初期化（Default を利用）
@@ -52,6 +53,7 @@ pub struct SetObjectPositionRequest {
 }
 
 impl SetObjectPositionRequest {
+    /// Handles incoming position events by updating entities’ target positions.
     pub fn event_handler(
         mut event_reader: EventReader<Self>,
         mut query: Query<(&ObjectId, &mut TargetPosition)>,
@@ -78,6 +80,7 @@ pub struct SpawnObjectRequest {
 }
 
 impl SpawnObjectRequest {
+    /// Handles spawn events by creating new entities with given properties.
     pub fn event_handler(
         mut event_reader: EventReader<Self>,
         mut commands: Commands,
@@ -121,7 +124,7 @@ impl SpawnObjectRequest {
     }
 }
 
-// 滑らか移動用システム：毎フレーム、Transform を TargetPosition に向かって線形補完する
+/// Smoothly interpolates each entity’s transform toward its target position.
 fn smooth_movement_system(
     time: Res<Time>,
     settings: Res<SmoothMovementSettings>,

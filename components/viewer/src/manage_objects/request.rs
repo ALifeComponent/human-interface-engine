@@ -7,12 +7,14 @@ use super::global::INTERNAL_REQUEST_LIST;
 pub struct InternalRequestPlugin;
 
 impl Plugin for InternalRequestPlugin {
+    /// Registers the object request plugin and the request-processing system.
     fn build(&self, app: &mut App) {
         app.add_plugins(object::ObjectRequestPlugin)
             .add_systems(Update, process_requests);
     }
 }
 
+/// Processes queued internal requests and emits corresponding spawn/position events.
 pub fn process_requests(
     mut request_cursor: ResMut<InternalRequestCursor>,
     mut spawn_request_event: EventWriter<object::SpawnObjectRequest>,

@@ -12,6 +12,7 @@ pub struct InternalRequestList {
 }
 
 impl InternalRequestList {
+    /// Creates a new internal request list backed by a thread-safe vector.
     pub fn new() -> Self {
         InternalRequestList {
             list: ThreadSafeVecRw::new(),
@@ -22,6 +23,7 @@ impl InternalRequestList {
 impl Deref for InternalRequestList {
     type Target = ThreadSafeVecRw<super::request::InternalRequest>;
 
+    /// Returns a reference to the underlying thread-safe request vector.
     fn deref(&self) -> &Self::Target {
         &self.list
     }

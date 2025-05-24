@@ -1,6 +1,7 @@
 use crate::camera::CameraSettings;
 use bevy::prelude::*;
 
+/// Bevy plugin that registers input systems for camera inversion toggles.
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
@@ -19,6 +20,7 @@ pub enum ToggleAction {
     InvertYaw,
 }
 
+/// Toggles camera pitch/yaw inversion on key press and updates UI text.
 pub fn toggle_input_system(
     mut camera_settings: ResMut<CameraSettings>,
     mut query: Query<(&mut Text, &ToggleButton)>,

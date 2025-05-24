@@ -167,6 +167,7 @@ pub enum SetObjectPositionError {
     InvalidPosition,
 }
 
+/// Converts a gRPC SetObjectPositionRequest into an internal request, validating fields.
 pub fn set_position_request_to_internal_request(
     set_position_request: SetObjectPositionRequest,
 ) -> std::result::Result<request::object::SetObjectPositionRequest, SetObjectPositionError> {
@@ -210,6 +211,7 @@ pub enum SpawnObjectError {
     InvalidObjectProperties,
 }
 
+/// Converts a gRPC SpawnObjectRequest into an internal request, validating fields and assigning a UUID.
 pub fn spawn_object_request_to_internal_request(
     spawn_object_request: SpawnObjectRequest,
 ) -> std::result::Result<request::object::SpawnObjectRequest, SpawnObjectError> {
@@ -257,6 +259,7 @@ pub fn spawn_object_request_to_internal_request(
     Ok(spawn_request)
 }
 
+/// Transforms a gRPC ObjectColor into a Bevy Color, validating values and enum variants.
 pub fn normalize_object_color(object_color: ObjectColor) -> anyhow::Result<bevy::color::Color> {
     let ObjectColor { color } = object_color;
 
