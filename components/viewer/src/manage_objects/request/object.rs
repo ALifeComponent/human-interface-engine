@@ -2,15 +2,21 @@ use bevy::prelude::*;
 use std::fmt::Display;
 use uuid::Uuid;
 
-// 線形補間速度を外部から指定する Resource
+// 線形補完速度と有効無効を外部から指定する Resource
 #[derive(Resource)]
 pub struct SmoothMovementSettings {
+    /// 補完の速さ（大きいほど速くターゲットに近づく）
     pub speed: f32,
+    /// 補完を有効にするかどうか
+    pub enabled: bool,
 }
 
 impl Default for SmoothMovementSettings {
     fn default() -> Self {
-        Self { speed: 10.0 }
+        Self {
+            speed: 10.0,
+            enabled: true,
+        }
     }
 }
 
@@ -23,6 +29,7 @@ pub struct ObjectRequestPlugin;
 impl Plugin for ObjectRequestPlugin {
     fn build(&self, app: &mut App) {
         app
+            // Resource を初期化（Default を利用）
             .init_resource::<SmoothMovementSettings>()
             .add_event::<SpawnObjectRequest>()
             .add_systems(Update, SpawnObjectRequest::event_handler)
@@ -114,15 +121,22 @@ impl SpawnObjectRequest {
     }
 }
 
-// 滑らか移動用システム：毎フレーム、Transform を TargetPosition に向かって線形補間する
+// 滑らか移動用システム：毎フレーム、Transform を TargetPosition に向かって線形補完する
 fn smooth_movement_system(
     time: Res<Time>,
     settings: Res<SmoothMovementSettings>,
     mut query: Query<(&mut Transform, &TargetPosition)>,
 ) {
-    let alpha = (time.delta_seconds() * settings.speed).clamp(0.0, 1.0);
+    // 補完率を計算
+    let alpha = (time.delta_secs() * settings.speed).clamp(0.0, 1.0);
     for (mut transform, target) in query.iter_mut() {
-        transform.translation = transform.translation.lerp(target.0, alpha);
+        if settings.enabled {
+            // 補完あり
+            transform.translation = transform.translation.lerp(target.0, alpha);
+        } else {
+            // 補完なし
+            transform.translation = target.0;
+        }
     }
 }
 
