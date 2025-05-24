@@ -1,5 +1,5 @@
-use std::fmt::Display;
 use bevy::prelude::{Time, *};
+use std::fmt::Display;
 use uuid::Uuid;
 
 // 線形補間速度を外部から指定する Resource
@@ -8,13 +8,19 @@ pub struct SmoothMovementSettings {
     pub speed: f32,
 }
 
+impl Default for SmoothMovementSettings {
+    fn default() -> Self {
+        Self { speed: 10.0 }
+    }
+}
+
 pub struct ObjectRequestPlugin;
 
 impl Plugin for ObjectRequestPlugin {
     fn build(&self, app: &mut App) {
         app
             // 補間速度の初期値を 5.0 に設定
-            .insert_resource(SmoothMovementSettings { speed: 5.0 })
+            .init_resource::<SmoothMovementSettings>()
             .add_event::<SetObjectPositionRequest>()
             .add_systems(Update, SetObjectPositionRequest::event_handler)
             .add_event::<SpawnObjectRequest>()
