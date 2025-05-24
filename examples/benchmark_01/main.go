@@ -50,7 +50,7 @@ func init() {
 		spawnWait.Default,
 	))
 	flag.Var(setPositionWait, "set-position-wait", fmt.Sprintf(
-		"delay before SetObjectPositionSequence RPC (default = %v or -set-wait=<duration>)",
+		"delay before SetObjectPositionSequence RPC (default = %v or -set-position-wait=<duration>)",
 		setPositionWait.Default,
 	))
 }
