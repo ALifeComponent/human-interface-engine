@@ -2,15 +2,20 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"math/rand/v2"
+	"time"
 
 	viewer "github.com/ALifeComponent/human-interface-engine/gen/go/viewer/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var wait = flag.Duration("wait", 500*time.Millisecond, "delay between RPC calls")
+
 func main() {
+	flag.Parse()
 	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
@@ -33,6 +38,7 @@ func main() {
 
 	// Send 100 requests of SpawnObjectSequenceRequest thath contains 100 SpawnObjectRequest (Spawing 10000 objects)
 	for i := range 100 {
+		time.Sleep(*wait)
 		resp, err := client.SpawnObjectSequence(ctx, reqs)
 		if err != nil {
 			log.Fatalf("RPC failed: %v", err)
@@ -50,6 +56,7 @@ func main() {
 
 		// Send 100*100 requests of `SetObjectPositionRequest` that contains 100 `SetObjectPositionRequest` (Moving 10000 objects)
 		for i := range 100 {
+			time.Sleep(*wait)
 			var reqs2 *viewer.SetObjectPositionSequenceRequest = &viewer.SetObjectPositionSequenceRequest{
 				Requests: make([]*viewer.SetObjectPositionRequest, 100),
 			}
