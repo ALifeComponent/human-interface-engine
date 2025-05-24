@@ -37,12 +37,19 @@ func (d *DurationFlag) Set(s string) error {
 }
 func (d *DurationFlag) IsBoolFlag() bool { return true }
 
-var wait = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * time.Millisecond}
+// SpawnObjectSequence 用の待機時間フラグ
+var spawnWait = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * time.Millisecond}
+// SetObjectPositionSequence 用の待機時間フラグ
+var setWait   = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * time.Millisecond}
 
 func init() {
-	flag.Var(wait, "wait", fmt.Sprintf(
-		"delay between RPC calls (default = %v, or specify -wait=<duration>)",
-		wait.Default,
+	flag.Var(spawnWait, "spawn-wait", fmt.Sprintf(
+		"delay before SpawnObjectSequence RPC (default = %v or -spawn-wait=<duration>)",
+		spawnWait.Default,
+	))
+	flag.Var(setWait,   "set-wait", fmt.Sprintf(
+		"delay before SetObjectPositionSequence RPC (default = %v or -set-wait=<duration>)",
+		setWait.Default,
 	))
 }
 
@@ -70,7 +77,7 @@ func main() {
 
 	// Send 100 requests of SpawnObjectSequenceRequest thath contains 100 SpawnObjectRequest (Spawing 10000 objects)
 	for i := range 100 {
-		time.Sleep(wait.Duration)
+		time.Sleep(spawnWait.Duration)
 		resp, err := client.SpawnObjectSequence(ctx, reqs)
 		if err != nil {
 			log.Fatalf("RPC failed: %v", err)
@@ -88,7 +95,7 @@ func main() {
 
 		// Send 100*100 requests of `SetObjectPositionRequest` that contains 100 `SetObjectPositionRequest` (Moving 10000 objects)
 		for i := range 100 {
-			time.Sleep(wait.Duration)
+			time.Sleep(setWait.Duration)
 			var reqs2 *viewer.SetObjectPositionSequenceRequest = &viewer.SetObjectPositionSequenceRequest{
 				Requests: make([]*viewer.SetObjectPositionRequest, 100),
 			}
