@@ -44,7 +44,7 @@ impl SetObjectPositionRequest {
                     );
                     if ENABLE_SMOOTH_MOVEMENT {
                         // 線形補間で滑らかに移動
-                        let alpha = (time.delta_seconds() * 5.0).clamp(0.0, 1.0);
+                        let alpha = (time.delta_secs() * 5.0).clamp(0.0, 1.0);
                         transform.translation = transform.translation.lerp(event.position, alpha);
                     } else {
                         // 非スムーズモードでは直接位置設定
