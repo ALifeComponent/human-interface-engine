@@ -8,6 +8,7 @@ use std::{f32::consts::FRAC_PI_2, ops::Range};
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
+    /// Inserts camera resources and registers camera control systems.
     fn build(&self, app: &mut App) {
         app.init_resource::<CameraSettings>()
             .init_resource::<CameraTarget>()

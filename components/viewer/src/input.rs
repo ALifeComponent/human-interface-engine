@@ -5,6 +5,7 @@ use bevy::prelude::*;
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
+    /// Registers the system for toggling camera inversion based on input.
     fn build(&self, app: &mut App) {
         app.add_systems(Update, toggle_input_system);
     }

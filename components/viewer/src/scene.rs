@@ -4,6 +4,7 @@ use bevy::prelude::*;
 pub struct ScenePlugin;
 
 impl Plugin for ScenePlugin {
+    /// Registers systems for scene setup, instruction text, and UI panel.
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
             .add_systems(Startup, instructions)
