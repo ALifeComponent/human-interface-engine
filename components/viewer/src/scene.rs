@@ -4,6 +4,7 @@ use bevy::prelude::*;
 pub struct ScenePlugin;
 
 impl Plugin for ScenePlugin {
+    /// Registers systems for scene setup, instruction text, and UI panel.
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
             .add_systems(Startup, instructions)
@@ -11,6 +12,7 @@ impl Plugin for ScenePlugin {
     }
 }
 
+/// Spawns the directional light used in the scene.
 pub fn setup(mut commands: Commands) {
     commands.spawn((
         Name::new("Light"),
@@ -25,6 +27,7 @@ pub fn setup(mut commands: Commands) {
     ));
 }
 
+/// Adds on-screen text that describes available camera controls.
 pub fn instructions(mut commands: Commands) {
     commands.spawn((
         Name::new("Instructions"),
@@ -45,6 +48,7 @@ pub fn instructions(mut commands: Commands) {
     ));
 }
 
+/// Constructs the UI panel with toggle buttons for pitch/yaw inversion.
 pub fn setup_ui(mut commands: Commands) {
     // UIの親ノード
     commands

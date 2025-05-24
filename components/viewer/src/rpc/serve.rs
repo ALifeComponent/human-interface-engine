@@ -9,6 +9,7 @@ use tonic::transport::Server;
 
 use super::service::ManageObjectServiceImpl;
 
+/// Starts the gRPC server on the specified socket address.
 pub async fn serve_grpc(addr: std::net::SocketAddr) -> Result<(), Box<dyn std::error::Error>> {
     let manage_object_service = ManageObjectServiceImpl::default();
 
@@ -32,6 +33,7 @@ impl Default for GrpcServer {
     }
 }
 
+/// Spawns a thread running the Tokio runtime to serve the gRPC server.
 pub fn spawn_grpc_request_system(grpc_server: Res<GrpcServer>) {
     let addr = grpc_server.addr;
 

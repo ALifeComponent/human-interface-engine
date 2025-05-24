@@ -4,9 +4,11 @@ use bevy::{
 };
 use std::{f32::consts::FRAC_PI_2, ops::Range};
 
+/// Bevy plugin that sets up the 3D camera and its control systems.
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
+    /// Inserts camera resources and registers camera control systems.
     fn build(&self, app: &mut App) {
         app.init_resource::<CameraSettings>()
             .init_resource::<CameraTarget>()
@@ -51,6 +53,7 @@ impl Default for CameraSettings {
     }
 }
 
+/// Spawns and configures the main 3D camera entity.
 fn setup_camera(mut commands: Commands) {
     commands.spawn((
         Name::new("Main Camera"),
@@ -59,7 +62,7 @@ fn setup_camera(mut commands: Commands) {
     ));
 }
 
-/// 回転と距離だけを担当。注視点は `CameraTarget` から取得。
+/// Rotates the camera around the target based on mouse drag input.
 fn orbit(
     mut camera: Single<&mut Transform, With<Camera>>,
     camera_settings: Res<CameraSettings>,
@@ -90,7 +93,7 @@ fn orbit(
     camera.translation = target.0 - camera.forward() * camera_settings.orbit_distance;
 }
 
-/// マウスホイールでズーム
+/// Zooms the camera in and out using the mouse wheel.
 fn handle_zoom(mut settings: ResMut<CameraSettings>, mut wheels: EventReader<MouseWheel>) {
     let scroll: f32 = wheels.read().map(|e| e.y).sum();
     if scroll != 0.0 {
@@ -99,7 +102,7 @@ fn handle_zoom(mut settings: ResMut<CameraSettings>, mut wheels: EventReader<Mou
     }
 }
 
-/// キーボードで注視点を平行移動
+/// Moves the camera target using WASD keyboard input.
 fn handle_movement(
     mut target: ResMut<CameraTarget>,
     camera_settings: Res<CameraSettings>,
@@ -127,7 +130,7 @@ fn handle_movement(
     }
 }
 
-/// 中ボタンドラッグで平行移動（パン）
+/// Pans the camera target when dragging with the middle mouse button.
 fn handle_drag(
     mut target: ResMut<CameraTarget>,
     camera: Single<&mut Transform, With<Camera>>,
