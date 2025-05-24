@@ -2,11 +2,20 @@ use std::fmt::Display;
 use bevy::prelude::{Time, *};
 use uuid::Uuid;
 
+// 線形補間速度を外部から指定する Resource
+#[derive(Resource)]
+pub struct SmoothMovementSettings {
+    pub speed: f32,
+}
+
 pub struct ObjectRequestPlugin;
 
 impl Plugin for ObjectRequestPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<SetObjectPositionRequest>()
+        app
+            // 補間速度の初期値を 5.0 に設定
+            .insert_resource(SmoothMovementSettings { speed: 5.0 })
+            .add_event::<SetObjectPositionRequest>()
             .add_systems(Update, SetObjectPositionRequest::event_handler)
             .add_event::<SpawnObjectRequest>()
             .add_systems(Update, SpawnObjectRequest::event_handler);
@@ -30,6 +39,7 @@ impl SetObjectPositionRequest {
         mut event_reader: EventReader<Self>,
         mut query: Query<(&ObjectId, &mut Transform)>,
         time: Res<Time>,
+        settings: Res<SmoothMovementSettings>,
     ) {
         for event in event_reader.read() {
             for (object_id, mut transform) in query.iter_mut() {
@@ -38,8 +48,8 @@ impl SetObjectPositionRequest {
                         "Setting position of object {} to {:?}",
                         object_id, event.position
                     );
-                    // 線形補間で滑らかに移動
-                    let alpha = (time.delta_secs() * 5.0).clamp(0.0, 1.0);
+                    // Resource で指定した速度で線形補間
+                    let alpha = (time.delta_secs() * settings.speed).clamp(0.0, 1.0);
                     transform.translation = transform.translation.lerp(event.position, alpha);
                 }
             }
