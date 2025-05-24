@@ -1,5 +1,8 @@
 use std::fmt::Display;
 
+// ■ 追加：滑らか移動を有効化するフラグ（定数で切り替え）
+const ENABLE_SMOOTH_MOVEMENT: bool = true;
+
 use bevy::prelude::{Time, *};
 use uuid::Uuid;
 
@@ -39,9 +42,14 @@ impl SetObjectPositionRequest {
                         "Setting position of object {} to {:?}",
                         object_id, event.position
                     );
-                    // 線形補間で滑らかに移動
-                    let alpha = (time.delta_seconds() * 5.0).clamp(0.0, 1.0);
-                    transform.translation = transform.translation.lerp(event.position, alpha);
+                    if ENABLE_SMOOTH_MOVEMENT {
+                        // 線形補間で滑らかに移動
+                        let alpha = (time.delta_seconds() * 5.0).clamp(0.0, 1.0);
+                        transform.translation = transform.translation.lerp(event.position, alpha);
+                    } else {
+                        // 非スムーズモードでは直接位置設定
+                        transform.translation = event.position;
+                    }
                 }
             }
         }
