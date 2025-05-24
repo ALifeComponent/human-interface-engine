@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 	"math/rand/v2"
 	"time"
@@ -12,7 +13,38 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var wait = flag.Duration("wait", 500*time.Millisecond, "delay between RPC calls")
+// ■ カスタム Duration フラグ
+//    -wait        → デフォルト値を使う (500ms)
+//     -wait=200ms → 200ms を使う
+type DurationFlag struct {
+	Duration time.Duration
+	Default  time.Duration
+}
+
+func (d *DurationFlag) String() string { return d.Duration.String() }
+func (d *DurationFlag) Set(s string) error {
+	// "-wait" だけ、もしくは "-wait=true" でデフォルトを適用
+	if s == "" || s == "true" {
+		d.Duration = d.Default
+		return nil
+	}
+	v, err := time.ParseDuration(s)
+	if err != nil {
+		return err
+	}
+	d.Duration = v
+	return nil
+}
+func (d *DurationFlag) IsBoolFlag() bool { return true }
+
+var wait = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * time.Millisecond}
+
+func init() {
+	flag.Var(wait, "wait", fmt.Sprintf(
+		"delay between RPC calls (default = %v, or specify -wait=<duration>)",
+		wait.Default,
+	))
+}
 
 func main() {
 	flag.Parse()
@@ -38,7 +70,7 @@ func main() {
 
 	// Send 100 requests of SpawnObjectSequenceRequest thath contains 100 SpawnObjectRequest (Spawing 10000 objects)
 	for i := range 100 {
-		time.Sleep(*wait)
+		time.Sleep(wait.Duration)
 		resp, err := client.SpawnObjectSequence(ctx, reqs)
 		if err != nil {
 			log.Fatalf("RPC failed: %v", err)
@@ -56,7 +88,7 @@ func main() {
 
 		// Send 100*100 requests of `SetObjectPositionRequest` that contains 100 `SetObjectPositionRequest` (Moving 10000 objects)
 		for i := range 100 {
-			time.Sleep(*wait)
+			time.Sleep(wait.Duration)
 			var reqs2 *viewer.SetObjectPositionSequenceRequest = &viewer.SetObjectPositionSequenceRequest{
 				Requests: make([]*viewer.SetObjectPositionRequest, 100),
 			}
