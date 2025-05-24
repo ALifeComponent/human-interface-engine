@@ -14,8 +14,9 @@ import (
 )
 
 // ■ カスタム Duration フラグ
-//    -wait        → デフォルト値を使う (500ms)
-//     -wait=200ms → 200ms を使う
+//
+//	-wait        → デフォルト値を使う (500ms)
+//	 -wait=200ms → 200ms を使う
 type DurationFlag struct {
 	Duration time.Duration
 	Default  time.Duration
@@ -39,17 +40,18 @@ func (d *DurationFlag) IsBoolFlag() bool { return true }
 
 // SpawnObjectSequence 用の待機時間フラグ
 var spawnWait = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * time.Millisecond}
+
 // SetObjectPositionSequence 用の待機時間フラグ
-var setWait   = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * time.Millisecond}
+var setPositionWait = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * time.Millisecond}
 
 func init() {
 	flag.Var(spawnWait, "spawn-wait", fmt.Sprintf(
 		"delay before SpawnObjectSequence RPC (default = %v or -spawn-wait=<duration>)",
 		spawnWait.Default,
 	))
-	flag.Var(setWait,   "set-wait", fmt.Sprintf(
+	flag.Var(setPositionWait, "set-position-wait", fmt.Sprintf(
 		"delay before SetObjectPositionSequence RPC (default = %v or -set-wait=<duration>)",
-		setWait.Default,
+		setPositionWait.Default,
 	))
 }
 
@@ -95,7 +97,7 @@ func main() {
 
 		// Send 100*100 requests of `SetObjectPositionRequest` that contains 100 `SetObjectPositionRequest` (Moving 10000 objects)
 		for i := range 100 {
-			time.Sleep(setWait.Duration)
+			time.Sleep(setPositionWait.Duration)
 			var reqs2 *viewer.SetObjectPositionSequenceRequest = &viewer.SetObjectPositionSequenceRequest{
 				Requests: make([]*viewer.SetObjectPositionRequest, 100),
 			}
