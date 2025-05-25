@@ -13,10 +13,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// ■ カスタム Duration フラグ
+// ■ Custom Duration Flag
 //
-//	-wait        → デフォルト値を使う (500ms)
-//	 -wait=200ms → 200ms を使う
+//	-wait        → use the default value (500ms)
+//	 -wait=200ms → use 200ms
 type DurationFlag struct {
 	Duration time.Duration
 	Default  time.Duration
@@ -38,10 +38,10 @@ func (d *DurationFlag) Set(s string) error {
 }
 func (d *DurationFlag) IsBoolFlag() bool { return true }
 
-// SpawnObjectSequence 用の待機時間フラグ
+// Delay flag for SpawnObjectSequence RPC
 var spawnWait = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * time.Millisecond}
 
-// SetObjectPositionSequence 用の待機時間フラグ
+// Delay flag for SetObjectPositionSequence RPC
 var setPositionWait = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * time.Millisecond}
 
 func init() {

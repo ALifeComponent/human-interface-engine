@@ -2,12 +2,12 @@ use bevy::prelude::*;
 use std::fmt::Display;
 use uuid::Uuid;
 
-// 線形補完速度と有効無効を外部から指定する Resource
+// Resource specifying smooth interpolation speed and enable/disable flag
 #[derive(Resource)]
 pub struct SmoothMovementSettings {
-    /// 補完の速さ（大きいほど速くターゲットに近づく）
+    /// Interpolation speed (higher value moves faster towards the target)
     pub speed: f32,
-    /// 補完を有効にするかどうか
+    /// Whether interpolation is enabled
     pub enabled: bool,
 }
 
@@ -20,7 +20,7 @@ impl Default for SmoothMovementSettings {
     }
 }
 
-// 各オブジェクトの現在ターゲット位置を保持するコンポーネント
+/// Component holding the current target position for each object
 #[derive(Component)]
 pub struct TargetPosition(pub Vec3);
 
@@ -30,7 +30,7 @@ impl Plugin for ObjectRequestPlugin {
     /// Initializes smooth movement settings and registers object request systems.
     fn build(&self, app: &mut App) {
         app
-            // Resource を初期化（Default を利用）
+            // Initialize resource using Default
             .init_resource::<SmoothMovementSettings>()
             .add_event::<SpawnObjectRequest>()
             .add_systems(Update, SpawnObjectRequest::event_handler)
@@ -130,14 +130,14 @@ fn smooth_movement_system(
     settings: Res<SmoothMovementSettings>,
     mut query: Query<(&mut Transform, &TargetPosition)>,
 ) {
-    // 補完率を計算
+    // Calculate interpolation ratio
     let alpha = (time.delta_secs() * settings.speed).clamp(0.0, 1.0);
     for (mut transform, target) in query.iter_mut() {
         if settings.enabled {
-            // 補完あり
+            // With interpolation
             transform.translation = transform.translation.lerp(target.0, alpha);
         } else {
-            // 補完なし
+            // Without interpolation
             transform.translation = target.0;
         }
     }
