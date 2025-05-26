@@ -58,18 +58,16 @@ impl SetObjectPositionRequest {
         mut event_reader: EventReader<Self>,
         mut query: Query<(&ObjectId, &mut TargetPosition)>,
     ) {
-        for (event, _id) in event_reader.par_read() {
-            query
-                .par_iter_mut()
-                .for_each(|(object_id, mut target_pos)| {
-                    if *object_id == event.object_id {
-                        info!(
-                            "Updating target position of object {} to {:?}",
-                            object_id, event.position
-                        );
-                        target_pos.0 = event.position;
-                    }
-                });
+        for event in event_reader.read() {
+            for (object_id, mut target_pos) in query.iter_mut() {
+                if *object_id == event.object_id {
+                    info!(
+                        "Updating target position of object {} to {:?}",
+                        object_id, event.position
+                    );
+                    target_pos.0 = event.position;
+                }
+            }
         }
     }
 }
@@ -89,7 +87,7 @@ impl SpawnObjectRequest {
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
     ) {
-        for (event, _id) in event_reader.par_read() {
+        for event in event_reader.read() {
             let props = &event.object_properties;
             let pos = event.position;
             match props.shape {
