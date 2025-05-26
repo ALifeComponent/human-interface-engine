@@ -59,15 +59,17 @@ impl SetObjectPositionRequest {
         mut query: Query<(&ObjectId, &mut TargetPosition)>,
     ) {
         for (event, _id) in event_reader.par_read() {
-            for (object_id, mut target_pos) in query.iter_mut() {
-                if *object_id == event.object_id {
-                    info!(
-                        "Updating target position of object {} to {:?}",
-                        object_id, event.position
-                    );
-                    target_pos.0 = event.position;
-                }
-            }
+            query
+                .par_iter_mut()
+                .for_each(|(object_id, mut target_pos)| {
+                    if *object_id == event.object_id {
+                        info!(
+                            "Updating target position of object {} to {:?}",
+                            object_id, event.position
+                        );
+                        target_pos.0 = event.position;
+                    }
+                });
         }
     }
 }
@@ -132,7 +134,7 @@ fn smooth_movement_system(
 ) {
     // Calculate interpolation ratio
     let alpha = (time.delta_secs() * settings.speed).clamp(0.0, 1.0);
-    for (mut transform, target) in query.iter_mut() {
+    query.par_iter_mut().for_each(|(mut transform, target)| {
         if settings.enabled {
             // With interpolation
             transform.translation = transform.translation.lerp(target.0, alpha);
@@ -140,7 +142,7 @@ fn smooth_movement_system(
             // Without interpolation
             transform.translation = target.0;
         }
-    }
+    });
 }
 
 #[derive(Debug, Component, Clone)]
