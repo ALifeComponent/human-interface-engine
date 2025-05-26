@@ -58,7 +58,7 @@ impl SetObjectPositionRequest {
         mut event_reader: EventReader<Self>,
         mut query: Query<(&ObjectId, &mut TargetPosition)>,
     ) {
-        for event in event_reader.read() {
+        for (event, _id) in event_reader.par_read() {
             for (object_id, mut target_pos) in query.iter_mut() {
                 if *object_id == event.object_id {
                     info!(
@@ -87,7 +87,7 @@ impl SpawnObjectRequest {
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
     ) {
-        for event in event_reader.read() {
+        for (event, _id) in event_reader.par_read() {
             let props = &event.object_properties;
             let pos = event.position;
             match props.shape {
