@@ -16,7 +16,7 @@ import (
 // ■ Custom Duration Flag
 //
 //	-wait        → use the default value (500ms)
-//	-wait=200ms → use 200ms
+//	 -wait=200ms → use 200ms
 type DurationFlag struct {
 	Duration time.Duration
 	Default  time.Duration
@@ -24,7 +24,7 @@ type DurationFlag struct {
 
 func (d *DurationFlag) String() string { return d.Duration.String() }
 func (d *DurationFlag) Set(s string) error {
-	// Use default value when "-wait" or "-wait=true" is provided
+	// "-wait" だけ、もしくは "-wait=true" でデフォルトを適用
 	if s == "" || s == "true" {
 		d.Duration = d.Default
 		return nil
@@ -57,70 +57,63 @@ func init() {
 
 func main() {
 	flag.Parse()
-	client, ctx := setupClient()
-	defer client.conn.Close()
-
-	ids := runSpawnSequences(ctx, client.stub)
-	runPositionSequences(ctx, client.stub, ids)
-}
-
-// setupClient establishes a gRPC connection and returns the client and context
-func setupClient() (struct {
-	conn *grpc.ClientConn
-	stub viewer.ManageObjectServiceClient
-}, context.Context) {
-	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}
-	client := viewer.NewManageObjectServiceClient(conn)
-	return struct {
-		conn *grpc.ClientConn
-		stub viewer.ManageObjectServiceClient
-	}{conn, client}, context.Background()
-}
+	defer conn.Close()
 
-// runSpawnSequences executes the object spawn sequence and returns the generated UUIDs
-func runSpawnSequences(ctx context.Context, client viewer.ManageObjectServiceClient) [][]byte {
-	// Assemble requests
-	reqs := &viewer.SpawnObjectSequenceRequest{Requests: make([]*viewer.SpawnObjectRequest, 100)}
-	for i := range reqs.Requests {
+	client := viewer.NewManageObjectServiceClient(conn)
+
+	ctx := context.Background()
+
+	// 100 sequence messages filled with random data
+	var reqs *viewer.SpawnObjectSequenceRequest = &viewer.SpawnObjectSequenceRequest{
+		Requests: make([]*viewer.SpawnObjectRequest, 100),
+	}
+	for i := range 100 {
 		reqs.Requests[i] = makeRandomSpawnObjectRequest()
 	}
 
-	ids := make([][]byte, len(reqs.Requests)*len(reqs.Requests))
-	for i := range reqs.Requests {
+	var uuids [][]byte = make([][]byte, 100*100)
+
+	// Send 100 requests of SpawnObjectSequenceRequest thath contains 100 SpawnObjectRequest (Spawing 10000 objects)
+	for i := range 100 {
 		time.Sleep(spawnWait.Duration)
 		resp, err := client.SpawnObjectSequence(ctx, reqs)
 		if err != nil {
-			log.Fatalf("Spawn RPC failed: %v", err)
+			log.Fatalf("RPC failed: %v", err)
 		}
+
 		for j, r := range resp.Responses {
-			log.Printf("Spawn Response: %v", r)
+			log.Printf("Response: %v", r)
 			if r.SpawendObjectId.Uuid != nil {
-				ids[j+i] = r.SpawendObjectId.Uuid.Value
+				uuids[j+i] = r.SpawendObjectId.Uuid.Value
 			}
 		}
 	}
-	return ids
-}
 
-// runPositionSequences executes the object position sequence
-func runPositionSequences(ctx context.Context, client viewer.ManageObjectServiceClient, ids [][]byte) {
 	for range 1000 {
-		for i := range ids {
+
+		// Send 100*100 requests of `SetObjectPositionRequest` that contains 100 `SetObjectPositionRequest` (Moving 10000 objects)
+		for i := range 100 {
 			time.Sleep(setPositionWait.Duration)
-			reqs := &viewer.SetObjectPositionSequenceRequest{Requests: make([]*viewer.SetObjectPositionRequest, 100)}
-			for j := range reqs.Requests {
-				reqs.Requests[j] = makeRandomSetObjectPositionRequest(ids[j+i])
+			var reqs2 *viewer.SetObjectPositionSequenceRequest = &viewer.SetObjectPositionSequenceRequest{
+				Requests: make([]*viewer.SetObjectPositionRequest, 100),
 			}
-			resp, err := client.SetObjectPositionSequence(ctx, reqs)
+			for j := range 100 {
+				reqs2.Requests[j] = makeRandomSetObjectPositionRequest(uuids[j+i])
+			}
+
+			resp2, err := client.SetObjectPositionSequence(ctx, reqs2)
 			if err != nil {
-				log.Fatalf("Position RPC failed: %v", err)
+				log.Fatalf("RPC failed: %v", err)
 			}
-			for _, r := range resp.Responses {
-				log.Printf("Position Response: %v", r)
+
+			for _, r := range resp2.Responses {
+				log.Printf("Response: %v", r)
 			}
+
 		}
 	}
 }
