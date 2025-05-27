@@ -2,7 +2,6 @@ use super::proto::generated::manage_object_service_server::ManageObjectServiceSe
 
 use bevy::prelude::*;
 
-use std::net::SocketAddr;
 use std::thread;
 use tokio::runtime::Runtime;
 use tonic::transport::Server;
@@ -20,21 +19,8 @@ pub async fn serve_grpc(addr: std::net::SocketAddr) -> Result<(), Box<dyn std::e
     Ok(())
 }
 
-#[derive(Debug, Resource)]
-pub struct GrpcServer {
-    pub addr: std::net::SocketAddr,
-}
-
-impl Default for GrpcServer {
-    fn default() -> Self {
-        Self {
-            addr: SocketAddr::from(([127, 0, 0, 1], 50051)),
-        }
-    }
-}
-
 /// Spawns a thread running the Tokio runtime to serve the gRPC server.
-pub fn spawn_grpc_request_system(grpc_server: Res<GrpcServer>) {
+pub fn spawn_grpc_request_system(grpc_server: Res<super::GrpcServer>) {
     let addr = grpc_server.addr;
 
     thread::spawn(move || {

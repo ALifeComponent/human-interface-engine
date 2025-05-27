@@ -12,7 +12,7 @@ use super::proto::generated::{
     SpawnObjectSequenceResponse, Uuid, object_color,
 };
 
-use bevy::log::{info, info_span, warn};
+use bevy::log::{trace, trace_span, warn};
 
 use bevy::math::Vec3;
 use tonic::Response;
@@ -28,7 +28,7 @@ impl ManageObjectService for ManageObjectServiceImpl {
         request: tonic::Request<SetObjectPositionRequest>,
     ) -> std::result::Result<tonic::Response<SetObjectPositionResponse>, tonic::Status> {
         // Create a span for tracing
-        let _span = info_span!("set_object_position_rpc").entered();
+        let _span = trace_span!("set_object_position_rpc").entered();
 
         let request = request.into_inner();
 
@@ -46,13 +46,13 @@ impl ManageObjectService for ManageObjectServiceImpl {
             }
         };
 
-        info!("Internal request: {:?}", internal_request);
+        trace!("Internal request: {:?}", internal_request);
 
         INTERNAL_REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::SetPosition(
             internal_request.clone(),
         )));
 
-        info!("Set position request added to queue");
+        trace!("Set position request added to queue");
 
         Ok(Response::new(SetObjectPositionResponse { success: true }))
     }
@@ -62,7 +62,7 @@ impl ManageObjectService for ManageObjectServiceImpl {
         &self,
         request: tonic::Request<SpawnObjectRequest>,
     ) -> std::result::Result<tonic::Response<SpawnObjectResponse>, tonic::Status> {
-        let _span = info_span!("spawn_object_rpc").entered();
+        let _span = trace_span!("spawn_object_rpc").entered();
 
         let request = request.into_inner();
 
@@ -86,13 +86,13 @@ impl ManageObjectService for ManageObjectServiceImpl {
             }
         };
 
-        info!("Internal request: {:?}", internal_request);
+        trace!("Internal request: {:?}", internal_request);
 
         INTERNAL_REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::Spawn(
             internal_request.clone(),
         )));
 
-        info!("Spawn request added to queue");
+        trace!("Spawn request added to queue");
 
         Ok(Response::new(SpawnObjectResponse {
             spawend_object_id: Some(ObjectId {
@@ -176,7 +176,7 @@ pub fn set_position_request_to_internal_request(
         position,
     } = set_position_request;
 
-    info!(
+    trace!(
         "Received request to set object position {:?} to {:?}",
         object_id, position
     );
@@ -220,7 +220,7 @@ pub fn spawn_object_request_to_internal_request(
         position,
     } = spawn_object_request;
 
-    info!(
+    trace!(
         "Received request to spawn object {:?} at position {:?}",
         object_properties, position
     );
@@ -279,7 +279,7 @@ pub fn normalize_object_color(object_color: ObjectColor) -> anyhow::Result<bevy:
             }
         }
         object_color::Color::ColorRgba(rgba) => {
-            info!("Object color is RGBA: {:?}", rgba);
+            trace!("Object color is RGBA: {:?}", rgba);
             if (rgba.r > 1.0 || rgba.g > 1.0 || rgba.b > 1.0 || rgba.a > 1.0)
                 || (rgba.r < 0.0 || rgba.g < 0.0 || rgba.b < 0.0 || rgba.a < 0.0)
             {

@@ -44,6 +44,8 @@ var spawnWait = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * t
 // Delay flag for SetObjectPositionSequence RPC
 var setPositionWait = &DurationFlag{Default: 500 * time.Millisecond, Duration: 500 * time.Millisecond}
 
+var target string = "localhost:50051"
+
 func init() {
 	flag.Var(spawnWait, "spawn-wait", fmt.Sprintf(
 		"delay before SpawnObjectSequence RPC (default = %v or -spawn-wait=<duration>)",
@@ -53,11 +55,16 @@ func init() {
 		"delay before SetObjectPositionSequence RPC (default = %v or -set-position-wait=<duration>)",
 		setPositionWait.Default,
 	))
+	// Network Host & port
+	flag.StringVar(&target, "target", target, fmt.Sprintf(
+		"target server address (default = %s or -target=<host:port>)",
+		target,
+	))
 }
 
 func main() {
 	flag.Parse()
-	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}

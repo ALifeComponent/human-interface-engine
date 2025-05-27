@@ -17,7 +17,7 @@ tokio = { version = "1.45.0", features = ["rt-multi-thread", "macros"] }
 tonic = "0.13.1"
 uuid = {version = "1.16.0", features = ["std", "v7"]}
 thiserror = { workspace = true }
+clap = { version = "4.0", features = ["derive"] }
 
 [build-dependencies]
 tonic-build = "0.13.1"
-

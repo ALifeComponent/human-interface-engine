@@ -61,7 +61,7 @@ impl SetObjectPositionRequest {
         for event in event_reader.read() {
             for (object_id, mut target_pos) in query.iter_mut() {
                 if *object_id == event.object_id {
-                    info!(
+                    trace!(
                         "Updating target position of object {} to {:?}",
                         object_id, event.position
                     );
@@ -92,7 +92,7 @@ impl SpawnObjectRequest {
             let pos = event.position;
             match props.shape {
                 ObjectShape::Cube => {
-                    info!("Spawning cube with size: {}", props.size);
+                    trace!("Spawning cube with size: {}", props.size);
                     commands.spawn((
                         event.object_id.clone(),
                         Name::new(event.object_id.to_string()),
@@ -106,7 +106,7 @@ impl SpawnObjectRequest {
                     ));
                 }
                 ObjectShape::Sphere => {
-                    info!("Spawning sphere with size: {}", props.size);
+                    trace!("Spawning sphere with size: {}", props.size);
                     commands.spawn((
                         event.object_id.clone(),
                         Name::new(event.object_id.to_string()),
