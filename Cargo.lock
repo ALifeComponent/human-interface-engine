@@ -1777,6 +1777,9 @@ dependencies = [
 [[package]]
 name = "control_panel"
 version = "0.1.0"
+dependencies = [
+ "bevy",
+]
 
 [[package]]
 name = "core-foundation"
