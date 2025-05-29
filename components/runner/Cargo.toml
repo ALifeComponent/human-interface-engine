@@ -11,5 +11,5 @@ release = ["viewer/release"]
 anyhow = { workspace = true }
 clap = { version = "4.0", features = ["derive"] }
 viewer = { path = "../viewer" }
-bevy = "0.16.0"
+bevy = { workspace = true }
 grpc = { path = "../grpc" }

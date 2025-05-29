@@ -4,8 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-prost = "0.13.5"
-tonic = "0.13.1"
+prost = { workspace = true }
+tonic = { workspace = true }
 
 [build-dependencies]
-tonic-build = "0.13.1"
+tonic-build = { workspace = true }
