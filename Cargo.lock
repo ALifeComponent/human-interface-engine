@@ -2499,6 +2499,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "36119f3a540b086b4e436bb2b588cf98a68863470e0e880f4d0842f112a3183a"
 
 [[package]]
+name = "grpc"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "prost",
+ "protobuf",
+ "thiserror 2.0.12",
+ "tokio",
+ "tonic",
+ "uuid",
+ "viewer",
+]
+
+[[package]]
 name = "guillotiere"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4011,8 +4026,10 @@ checksum = "6c20b6793b5c2fa6553b250154b78d6d0db37e72700ae35fad9387a46f487c97"
 name = "runner"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bevy",
  "clap",
+ "grpc",
  "viewer",
 ]
 
@@ -4817,11 +4834,7 @@ dependencies = [
  "anyhow",
  "bevy",
  "once_cell",
- "prost",
- "protobuf",
  "thiserror 2.0.12",
- "tokio",
- "tonic",
  "uuid",
 ]
 

@@ -1,9 +1,10 @@
+mod serve;
+pub mod viewer_rpc;
+
 use std::net::SocketAddr;
 
 use bevy::prelude::*;
 use serve::spawn_grpc_request_system;
-mod serve;
-mod service;
 
 #[derive(Debug, Resource)]
 pub struct GrpcServer {

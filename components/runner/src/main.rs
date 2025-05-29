@@ -18,7 +18,8 @@ fn main() {
     let cli = Cli::parse();
 
     App::new()
-        .insert_resource(viewer::rpc::GrpcServer::new(cli.grpc_addr))
+        .insert_resource(grpc::GrpcServer::new(cli.grpc_addr))
+        .add_plugins(grpc::RpcPlugin)
         .add_plugins(viewer::ViewerPlugin)
         .run();
 }

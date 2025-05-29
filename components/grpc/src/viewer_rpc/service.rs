@@ -1,12 +1,11 @@
 use thiserror::Error;
 
-use crate::manage_objects::global::INTERNAL_REQUEST_LIST;
-use crate::manage_objects::request::{self, InternalRequest, object::ObjectRequest};
-use protobuf::generated::ObjectSize;
+use viewer::manage_objects::global::INTERNAL_REQUEST_LIST;
+use viewer::manage_objects::request::{self, InternalRequest, object::ObjectRequest};
 
 use protobuf::generated::manage_object_service_server::ManageObjectService;
 use protobuf::generated::{
-    ObjectColor, ObjectColorEnum, ObjectId, ObjectShape, SetObjectPositionRequest,
+    ObjectColor, ObjectColorEnum, ObjectId, ObjectShape, ObjectSize, SetObjectPositionRequest,
     SetObjectPositionResponse, SetObjectPositionSequenceRequest, SetObjectPositionSequenceResponse,
     SpawnObjectRequest, SpawnObjectResponse, SpawnObjectSequenceRequest,
     SpawnObjectSequenceResponse, Uuid, object_color,

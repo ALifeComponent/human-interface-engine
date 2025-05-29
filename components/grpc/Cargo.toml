@@ -1,0 +1,15 @@
+[package]
+name = "grpc"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy = "0.16.0"
+protobuf = { path = "../protobuf" }
+viewer = { path = "../viewer" }
+prost = "0.13.5"
+tokio = { version = "1.45.0", features = ["rt-multi-thread", "macros"] }
+tonic = "0.13.1"
+anyhow = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }

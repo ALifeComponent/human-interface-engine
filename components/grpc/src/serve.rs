@@ -6,7 +6,7 @@ use std::thread;
 use tokio::runtime::Runtime;
 use tonic::transport::Server;
 
-use super::service::ManageObjectServiceImpl;
+use super::viewer_rpc::service::ManageObjectServiceImpl;
 
 /// Starts the gRPC server on the specified socket address.
 pub async fn serve_grpc(addr: std::net::SocketAddr) -> Result<(), Box<dyn std::error::Error>> {

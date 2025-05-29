@@ -8,6 +8,8 @@ default = []
 release = ["viewer/release", "bevy/dynamic_linking"]
 
 [dependencies]
+anyhow = { workspace = true }
 clap = { version = "4.0", features = ["derive"] }
 viewer = { path = "../viewer" }
 bevy = "0.16.0"
+grpc = { path = "../grpc" }

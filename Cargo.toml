@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = [ 
+members = [ "components/grpc", 
   "components/protobuf",
   "components/runner",
   "components/viewer",
@@ -12,6 +12,8 @@ edition = "2024"
 
 [workspace.dependencies]
 thiserror = { version = "2" }
+anyhow = "1.0.98"
+uuid = {version = "1.16.0", features = ["std", "v7"]}
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]
