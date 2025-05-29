@@ -17,5 +17,8 @@ struct Cli {
 fn main() {
     let cli = Cli::parse();
 
-    App::new().add_plugins(viewer::ViewerPlugin).run();
+    App::new()
+        .insert_resource(viewer::rpc::GrpcServer::new(cli.grpc_addr))
+        .add_plugins(viewer::ViewerPlugin)
+        .run();
 }

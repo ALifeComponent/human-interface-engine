@@ -1,7 +1,7 @@
 mod camera;
 mod input;
 mod manage_objects;
-mod rpc;
+pub mod rpc;
 mod scene;
 mod types;
 
