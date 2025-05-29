@@ -2,10 +2,10 @@ use thiserror::Error;
 
 use crate::manage_objects::global::INTERNAL_REQUEST_LIST;
 use crate::manage_objects::request::{self, InternalRequest, object::ObjectRequest};
-use crate::rpc::proto::generated::ObjectSize;
+use protobuf::generated::ObjectSize;
 
-use super::proto::generated::manage_object_service_server::ManageObjectService;
-use super::proto::generated::{
+use protobuf::generated::manage_object_service_server::ManageObjectService;
+use protobuf::generated::{
     ObjectColor, ObjectColorEnum, ObjectId, ObjectShape, SetObjectPositionRequest,
     SetObjectPositionResponse, SetObjectPositionSequenceRequest, SetObjectPositionSequenceResponse,
     SpawnObjectRequest, SpawnObjectResponse, SpawnObjectSequenceRequest,

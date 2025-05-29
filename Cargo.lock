@@ -3808,6 +3808,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "protobuf"
+version = "0.1.0"
+dependencies = [
+ "prost",
+ "tonic",
+ "tonic-build",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3997,6 +4006,15 @@ name = "roxmltree"
 version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c20b6793b5c2fa6553b250154b78d6d0db37e72700ae35fad9387a46f487c97"
+
+[[package]]
+name = "runner"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "clap",
+ "viewer",
+]
 
 [[package]]
 name = "rustc-demangle"
@@ -4798,13 +4816,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bevy",
- "clap",
  "once_cell",
  "prost",
+ "protobuf",
  "thiserror 2.0.12",
  "tokio",
  "tonic",
- "tonic-build",
  "uuid",
 ]
 

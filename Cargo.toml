@@ -1,7 +1,9 @@
 [workspace]
 resolver = "3"
-members = [
-    "components/viewer",
+members = [ 
+  "components/protobuf",
+  "components/runner",
+  "components/viewer",
 ]
 
 [workspace.package]

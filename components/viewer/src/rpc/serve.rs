@@ -1,4 +1,4 @@
-use super::proto::generated::manage_object_service_server::ManageObjectServiceServer;
+use protobuf::generated::manage_object_service_server::ManageObjectServiceServer;
 
 use bevy::prelude::*;
 

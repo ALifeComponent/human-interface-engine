@@ -1,0 +1,13 @@
+[package]
+name = "runner"
+version.workspace = true
+edition.workspace = true
+
+[features]
+default = []
+release = ["viewer/release", "bevy/dynamic_linking"]
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+viewer = { path = "../viewer" }
+bevy = "0.16.0"

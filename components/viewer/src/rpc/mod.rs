@@ -2,7 +2,6 @@ use std::net::SocketAddr;
 
 use bevy::prelude::*;
 use serve::spawn_grpc_request_system;
-mod proto;
 mod serve;
 mod service;
 

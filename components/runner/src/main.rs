@@ -3,6 +3,8 @@
 use clap::Parser;
 use std::net::SocketAddr;
 
+use bevy::prelude::*;
+
 #[derive(Parser)]
 #[command(author, version, about)]
 struct Cli {
@@ -12,9 +14,8 @@ struct Cli {
     grpc_addr: SocketAddr,
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let cli = Cli::parse();
-    viewer::run_app(cli.grpc_addr)?;
 
-    Ok(())
+    App::new().add_plugins(viewer::ViewerPlugin).run();
 }
