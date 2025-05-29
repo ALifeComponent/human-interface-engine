@@ -9,3 +9,8 @@ init-hooks:
 	ln -s $(realpath ./scripts/pre-commit) .git/hooks/pre-commit || true
 	@echo "Git hooks initialized."
 
+.PHONY: build
+build:
+	@echo "Building project..."
+	cargo build -p runner --release --features release
+	@echo "Build complete."

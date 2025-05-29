@@ -4,8 +4,8 @@ version.workspace = true
 edition.workspace = true
 
 [features]
-default = []
-release = ["viewer/release", "bevy/dynamic_linking"]
+default = ["bevy/dynamic_linking"]
+release = ["viewer/release"]
 
 [dependencies]
 anyhow = { workspace = true }
