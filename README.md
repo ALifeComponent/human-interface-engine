@@ -10,6 +10,10 @@ For development setup, please follow these steps:
    ```bash
    make init
    ```
+2. Build the project:
+   ```bash
+   make build
+   ```
 
 This command sets up the necessary git hooks and prepares your development environment.
 
