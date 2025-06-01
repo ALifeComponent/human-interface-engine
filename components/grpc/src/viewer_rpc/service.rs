@@ -45,10 +45,10 @@ impl ManageObjectService for ManageObjectServiceImpl {
             }
         };
 
-        trace!("Internal request: {:?}", internal_request);
+        trace!("Internal request: {:?}", &internal_request);
 
         INTERNAL_REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::SetPosition(
-            internal_request.clone(),
+            internal_request,
         )));
 
         trace!("Set position request added to queue");
@@ -85,21 +85,23 @@ impl ManageObjectService for ManageObjectServiceImpl {
             }
         };
 
-        trace!("Internal request: {:?}", internal_request);
+        let response = Response::new(SpawnObjectResponse {
+            spawend_object_id: Some(ObjectId {
+                uuid: Some(Uuid {
+                    value: (&internal_request).object_id.uuid.as_bytes().to_vec(),
+                }),
+            }),
+        });
+
+        trace!("Internal request: {:?}", &internal_request);
 
         INTERNAL_REQUEST_LIST.push(InternalRequest::ObjectRequest(ObjectRequest::Spawn(
-            internal_request.clone(),
+            internal_request,
         )));
 
         trace!("Spawn request added to queue");
 
-        Ok(Response::new(SpawnObjectResponse {
-            spawend_object_id: Some(ObjectId {
-                uuid: Some(Uuid {
-                    value: internal_request.object_id.uuid.as_bytes().to_vec(),
-                }),
-            }),
-        }))
+        Ok(response)
     }
 
     #[doc = " Sets the position of multiple objects in a single request."]
@@ -111,7 +113,8 @@ impl ManageObjectService for ManageObjectServiceImpl {
         let request = request.into_inner();
         let SetObjectPositionSequenceRequest { requests } = request;
 
-        let mut set_object_responses: Vec<SetObjectPositionResponse> = Vec::new();
+        let mut set_object_responses: Vec<SetObjectPositionResponse> =
+            Vec::with_capacity(requests.len());
 
         for (index, request) in requests.into_iter().enumerate() {
             let response = self
@@ -138,7 +141,8 @@ impl ManageObjectService for ManageObjectServiceImpl {
         let request = request.into_inner();
         let SpawnObjectSequenceRequest { requests } = request;
 
-        let mut spawn_object_responses: Vec<SpawnObjectResponse> = Vec::new();
+        let mut spawn_object_responses: Vec<SpawnObjectResponse> =
+            Vec::with_capacity(requests.len());
 
         for (index, request) in requests.into_iter().enumerate() {
             let response = self
