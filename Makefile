@@ -12,5 +12,6 @@ init-hooks:
 .PHONY: build
 build:
 	@echo "Building project..."
+	pnpm buf generate proto
 	cargo build -p runner --release --features release
 	@echo "Build complete."
